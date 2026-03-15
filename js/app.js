@@ -973,14 +973,11 @@ var SEED_CONFESSIONS = [{
 var REACTIONS = ['Relatable', 'Wake up', 'Stay strong', 'I see you'];
 
 // ==================== FIREBASE AUTH LAYER ====================
-// Firebase is loaded via CDN scripts in index.html.
-// These helpers wrap Firebase Auth so the rest of the app stays clean.
 
 function getFirebase() {
   return window._firebase || null;
 }
 function getSession() {
-  // Firebase manages its own session persistence — we just cache display info
   try {
     return JSON.parse(sessionStorage.getItem('fc_session') || 'null');
   } catch (_unused) {
@@ -993,12 +990,19 @@ function saveSession(user) {
 function clearSession() {
   sessionStorage.removeItem('fc_session');
 }
-
-// Username validation (used before Firebase calls)
 function validateUsername(uname) {
   if (!uname || uname.trim().length < 2) return 'Username must be at least 2 characters.';
   if (!/^[a-zA-Z0-9_]+$/.test(uname.trim())) return 'Username can only contain letters, numbers, and underscores.';
   return null;
+}
+
+// Simple hash for storing terminal password for Google users in Firestore
+function simpleHash(str) {
+  var h = 0;
+  for (var i = 0; i < str.length; i++) {
+    h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+  }
+  return 'h' + Math.abs(h).toString(16).padStart(10, '0');
 }
 function firebaseErrorMessage(code) {
   var map = {
@@ -1049,13 +1053,13 @@ function callTyler(_x) {
   return _callTyler.apply(this, arguments);
 } // ==================== VISION API (photo + text) ====================
 function _callTyler() {
-  _callTyler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(prompt) {
-    var _data$content, res, _err$error, err, data, _t14;
-    return _regenerator().w(function (_context13) {
-      while (1) switch (_context13.p = _context13.n) {
+  _callTyler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(prompt) {
+    var _data$content, res, _err$error, err, data, _t16;
+    return _regenerator().w(function (_context14) {
+      while (1) switch (_context14.p = _context14.n) {
         case 0:
-          _context13.p = 0;
-          _context13.n = 1;
+          _context14.p = 0;
+          _context14.n = 1;
           return fetch("/.netlify/functions/claude", {
             method: "POST",
             headers: {
@@ -1071,32 +1075,32 @@ function _callTyler() {
             })
           });
         case 1:
-          res = _context13.v;
+          res = _context14.v;
           if (res.ok) {
-            _context13.n = 3;
+            _context14.n = 3;
             break;
           }
-          _context13.n = 2;
+          _context14.n = 2;
           return res.json().catch(function () {
             return {};
           });
         case 2:
-          err = _context13.v;
+          err = _context14.v;
           console.warn("Tyler API error:", res.status, (err === null || err === void 0 || (_err$error = err.error) === null || _err$error === void 0 ? void 0 : _err$error.message) || '');
-          return _context13.a(2, "...");
+          return _context14.a(2, "...");
         case 3:
-          _context13.n = 4;
+          _context14.n = 4;
           return res.json();
         case 4:
-          data = _context13.v;
-          return _context13.a(2, ((_data$content = data.content) === null || _data$content === void 0 || (_data$content = _data$content[0]) === null || _data$content === void 0 ? void 0 : _data$content.text) || "...");
+          data = _context14.v;
+          return _context14.a(2, ((_data$content = data.content) === null || _data$content === void 0 || (_data$content = _data$content[0]) === null || _data$content === void 0 ? void 0 : _data$content.text) || "...");
         case 5:
-          _context13.p = 5;
-          _t14 = _context13.v;
-          console.warn("callTyler failed:", _t14.message);
-          return _context13.a(2, "...");
+          _context14.p = 5;
+          _t16 = _context14.v;
+          console.warn("callTyler failed:", _t16.message);
+          return _context14.a(2, "...");
       }
-    }, _callee13, null, [[0, 5]]);
+    }, _callee14, null, [[0, 5]]);
   }));
   return _callTyler.apply(this, arguments);
 }
@@ -1104,13 +1108,13 @@ function callTylerWithPhoto(_x2, _x3, _x4) {
   return _callTylerWithPhoto.apply(this, arguments);
 } // ==================== ENTRY GATE ====================
 function _callTylerWithPhoto() {
-  _callTylerWithPhoto = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(prompt, base64Image, mimeType) {
-    var _data$content2, res, data, _t15;
-    return _regenerator().w(function (_context14) {
-      while (1) switch (_context14.p = _context14.n) {
+  _callTylerWithPhoto = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(prompt, base64Image, mimeType) {
+    var _data$content2, res, data, _t17;
+    return _regenerator().w(function (_context15) {
+      while (1) switch (_context15.p = _context15.n) {
         case 0:
-          _context14.p = 0;
-          _context14.n = 1;
+          _context15.p = 0;
+          _context15.n = 1;
           return fetch("/.netlify/functions/claude", {
             method: "POST",
             headers: {
@@ -1136,24 +1140,24 @@ function _callTylerWithPhoto() {
             })
           });
         case 1:
-          res = _context14.v;
+          res = _context15.v;
           if (res.ok) {
-            _context14.n = 2;
+            _context15.n = 2;
             break;
           }
-          return _context14.a(2, null);
+          return _context15.a(2, null);
         case 2:
-          _context14.n = 3;
+          _context15.n = 3;
           return res.json();
         case 3:
-          data = _context14.v;
-          return _context14.a(2, ((_data$content2 = data.content) === null || _data$content2 === void 0 || (_data$content2 = _data$content2[0]) === null || _data$content2 === void 0 ? void 0 : _data$content2.text) || null);
+          data = _context15.v;
+          return _context15.a(2, ((_data$content2 = data.content) === null || _data$content2 === void 0 || (_data$content2 = _data$content2[0]) === null || _data$content2 === void 0 ? void 0 : _data$content2.text) || null);
         case 4:
-          _context14.p = 4;
-          _t15 = _context14.v;
-          return _context14.a(2, null);
+          _context15.p = 4;
+          _t17 = _context15.v;
+          return _context15.a(2, null);
       }
-    }, _callee14, null, [[0, 4]]);
+    }, _callee15, null, [[0, 4]]);
   }));
   return _callTylerWithPhoto.apply(this, arguments);
 }
@@ -1199,6 +1203,16 @@ function NoiseCanvas() {
 function AuthScreen(_ref2) {
   var onAuth = _ref2.onAuth,
     initialMode = _ref2.initialMode;
+  /*
+    MODES:
+    welcome          — landing screen with two options
+    signup           — email / username / password form
+    email_sent       — waiting screen after signup (tells user to check email)
+    login            — sign in with email + password
+    google_setup     — first-time Google user sets username + terminal password
+    forgot_password  — sends reset email
+    forgot_username  — looks up username by email
+  */
   var _useState = useState(initialMode || 'welcome'),
     _useState2 = _slicedToArray(_useState, 2),
     mode = _useState2[0],
@@ -1219,34 +1233,27 @@ function AuthScreen(_ref2) {
     _useState0 = _slicedToArray(_useState9, 2),
     confirmPw = _useState0[0],
     setConfirmPw = _useState0[1];
-  var _useState1 = useState(''),
+  var _useState1 = useState(false),
     _useState10 = _slicedToArray(_useState1, 2),
-    newPassword = _useState10[0],
-    setNewPassword = _useState10[1];
+    showPw = _useState10[0],
+    setShowPw = _useState10[1];
   var _useState11 = useState(''),
     _useState12 = _slicedToArray(_useState11, 2),
-    confirmNewPw = _useState12[0],
-    setConfirmNewPw = _useState12[1];
+    error = _useState12[0],
+    setError = _useState12[1];
   var _useState13 = useState(''),
     _useState14 = _slicedToArray(_useState13, 2),
-    error = _useState14[0],
-    setError = _useState14[1];
-  var _useState15 = useState(''),
+    success = _useState14[0],
+    setSuccess = _useState14[1];
+  var _useState15 = useState(false),
     _useState16 = _slicedToArray(_useState15, 2),
-    success = _useState16[0],
-    setSuccess = _useState16[1];
-  var _useState17 = useState(false),
+    loading = _useState16[0],
+    setLoading = _useState16[1];
+  // Holds the Google credential temporarily while we collect username + terminal password
+  var _useState17 = useState(null),
     _useState18 = _slicedToArray(_useState17, 2),
-    loading = _useState18[0],
-    setLoading = _useState18[1];
-  var _useState19 = useState(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    showPw = _useState20[0],
-    setShowPw = _useState20[1];
-  var _useState21 = useState(''),
-    _useState22 = _slicedToArray(_useState21, 2),
-    resetEmail = _useState22[0],
-    setResetEmail = _useState22[1];
+    pendingGoogle = _useState18[0],
+    setPendingGoogle = _useState18[1];
   var reset = function reset() {
     setError('');
     setSuccess('');
@@ -1255,64 +1262,56 @@ function AuthScreen(_ref2) {
     setEmail('');
     setPassword('');
     setConfirmPw('');
-    setNewPassword('');
-    setConfirmNewPw('');
   };
   var go = function go(m) {
     reset();
     setMode(m);
   };
-
-  // ── Firebase helpers ──────────────────────────────────────────────────────
   var fb = function fb() {
     var f = getFirebase();
     if (!f) {
-      setError('Firebase not initialised. Check your configuration.');
+      setError('Firebase is not configured. Check js/firebase-config.js.');
       return null;
     }
     return f;
   };
+
+  // ─────────────────────────────────────────────────────────────────
+  //  FLOW 1 — Email / Password sign-up
+  // ─────────────────────────────────────────────────────────────────
   var handleSignup = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-      var unameErr, f, cred, user, _t;
+      var unameErr, f, cred, _t;
       return _regenerator().w(function (_context) {
         while (1) switch (_context.p = _context.n) {
           case 0:
             setError('');
-            setLoading(true);
             unameErr = validateUsername(username);
             if (!unameErr) {
               _context.n = 1;
               break;
             }
-            setError(unameErr);
-            setLoading(false);
-            return _context.a(2);
+            return _context.a(2, setError(unameErr));
           case 1:
             if (!(!email.trim() || !email.includes('@') || !email.includes('.'))) {
               _context.n = 2;
               break;
             }
-            setError('Please enter a valid email address.');
-            setLoading(false);
-            return _context.a(2);
+            return _context.a(2, setError('Please enter a valid email address.'));
           case 2:
             if (!(password.length < 6)) {
               _context.n = 3;
               break;
             }
-            setError('Password must be at least 6 characters.');
-            setLoading(false);
-            return _context.a(2);
+            return _context.a(2, setError('Password must be at least 6 characters.'));
           case 3:
             if (!(password !== confirmPw)) {
               _context.n = 4;
               break;
             }
-            setError('Passwords do not match.');
-            setLoading(false);
-            return _context.a(2);
+            return _context.a(2, setError('Passwords do not match.'));
           case 4:
+            setLoading(true);
             f = fb();
             if (f) {
               _context.n = 5;
@@ -1337,38 +1336,36 @@ function AuthScreen(_ref2) {
             return f.db.collection('users').doc(cred.user.uid).set({
               username: username.trim(),
               email: email.trim().toLowerCase(),
+              method: 'email',
               createdAt: new Date(),
               xp: 0
             });
           case 9:
-            user = {
-              uid: cred.user.uid,
-              username: username.trim(),
-              email: cred.user.email,
-              method: 'email'
-            };
-            saveSession(user);
-            setSuccess('Account created! A verification email has been sent to ' + email + '. Please verify before signing in.');
-            setLoading(false);
-            setTimeout(function () {
-              onAuth(user);
-            }, 2500);
-            _context.n = 11;
-            break;
+            _context.n = 10;
+            return f.auth.signOut();
           case 10:
-            _context.p = 10;
+            setLoading(false);
+            go('email_sent');
+            _context.n = 12;
+            break;
+          case 11:
+            _context.p = 11;
             _t = _context.v;
             setError(firebaseErrorMessage(_t.code));
             setLoading(false);
-          case 11:
+          case 12:
             return _context.a(2);
         }
-      }, _callee, null, [[5, 10]]);
+      }, _callee, null, [[5, 11]]);
     }));
     return function handleSignup() {
       return _ref3.apply(this, arguments);
     };
   }();
+
+  // ─────────────────────────────────────────────────────────────────
+  //  FLOW 1 — Email / Password sign-in
+  // ─────────────────────────────────────────────────────────────────
   var handleLogin = /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
       var f, cred, doc, uname, user, _t2;
@@ -1376,23 +1373,19 @@ function AuthScreen(_ref2) {
         while (1) switch (_context2.p = _context2.n) {
           case 0:
             setError('');
-            setLoading(true);
             if (email.trim()) {
               _context2.n = 1;
               break;
             }
-            setError('Please enter your email.');
-            setLoading(false);
-            return _context2.a(2);
+            return _context2.a(2, setError('Please enter your email.'));
           case 1:
             if (password) {
               _context2.n = 2;
               break;
             }
-            setError('Please enter your password.');
-            setLoading(false);
-            return _context2.a(2);
+            return _context2.a(2, setError('Please enter your password.'));
           case 2:
+            setLoading(true);
             f = fb();
             if (f) {
               _context2.n = 3;
@@ -1434,9 +1427,13 @@ function AuthScreen(_ref2) {
       return _ref4.apply(this, arguments);
     };
   }();
+
+  // ─────────────────────────────────────────────────────────────────
+  //  FLOW 2 — Google sign-in (Step 1: OAuth popup)
+  // ─────────────────────────────────────────────────────────────────
   var handleGoogleSignIn = /*#__PURE__*/function () {
     var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var f, provider, cred, uid, docRef, doc, uname, user, _t3;
+      var f, provider, cred, uid, docRef, doc, data, user, _t3;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.p = _context3.n) {
           case 0:
@@ -1455,117 +1452,148 @@ function AuthScreen(_ref2) {
             return f.auth.signInWithPopup(provider);
           case 2:
             cred = _context3.v;
-            uid = cred.user.uid; // Check if user doc exists; create if first time
+            uid = cred.user.uid;
             docRef = f.db.collection('users').doc(uid);
             _context3.n = 3;
             return docRef.get();
           case 3:
             doc = _context3.v;
-            uname = cred.user.displayName || cred.user.email.split('@')[0];
-            if (doc.exists) {
-              _context3.n = 5;
-              break;
+            if (doc.exists && doc.data().username && doc.data().terminalPasswordHash) {
+              // Returning Google user — already has username + terminal password set
+              data = doc.data();
+              user = {
+                uid: uid,
+                username: data.username,
+                email: cred.user.email,
+                method: 'google'
+              };
+              saveSession(user);
+              onAuth(user);
+            } else {
+              // First-time Google user — need to collect username + terminal password
+              setPendingGoogle({
+                uid: uid,
+                email: cred.user.email,
+                displayName: cred.user.displayName
+              });
+              setLoading(false);
+              go('google_setup');
             }
-            _context3.n = 4;
-            return docRef.set({
-              username: uname,
-              email: cred.user.email.toLowerCase(),
-              createdAt: new Date(),
-              xp: 0
-            });
+            _context3.n = 5;
+            break;
           case 4:
-            _context3.n = 6;
-            break;
-          case 5:
-            uname = doc.data().username || uname;
-          case 6:
-            user = {
-              uid: uid,
-              username: uname,
-              email: cred.user.email,
-              method: 'google'
-            };
-            saveSession(user);
-            onAuth(user);
-            _context3.n = 8;
-            break;
-          case 7:
-            _context3.p = 7;
+            _context3.p = 4;
             _t3 = _context3.v;
             setError(firebaseErrorMessage(_t3.code));
             setLoading(false);
-          case 8:
+          case 5:
             return _context3.a(2);
         }
-      }, _callee3, null, [[1, 7]]);
+      }, _callee3, null, [[1, 4]]);
     }));
     return function handleGoogleSignIn() {
       return _ref5.apply(this, arguments);
     };
   }();
-  var handleForgotPasswordLookup = /*#__PURE__*/function () {
+
+  // ─────────────────────────────────────────────────────────────────
+  //  FLOW 2 — Google sign-in (Step 2: Set username + terminal password)
+  // ─────────────────────────────────────────────────────────────────
+  var handleGoogleSetup = /*#__PURE__*/function () {
     var _ref6 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-      var f, _t4;
+      var unameErr, f, user, _t4;
       return _regenerator().w(function (_context4) {
         while (1) switch (_context4.p = _context4.n) {
           case 0:
             setError('');
-            setSuccess('');
-            setLoading(true);
-            if (!(!email.trim() || !email.includes('@'))) {
+            if (pendingGoogle) {
               _context4.n = 1;
               break;
             }
-            setError('Please enter a valid email address.');
-            setLoading(false);
-            return _context4.a(2);
+            return _context4.a(2, setError('Google sign-in session expired. Please try again.'));
           case 1:
-            f = fb();
-            if (f) {
+            unameErr = validateUsername(username);
+            if (!unameErr) {
               _context4.n = 2;
               break;
             }
-            return _context4.a(2);
+            return _context4.a(2, setError(unameErr));
           case 2:
-            _context4.p = 2;
-            _context4.n = 3;
-            return f.auth.sendPasswordResetEmail(email.trim());
+            if (!(password.length < 6)) {
+              _context4.n = 3;
+              break;
+            }
+            return _context4.a(2, setError('Password must be at least 6 characters.'));
           case 3:
-            setSuccess('Password reset email sent to ' + email + '. Check your inbox (and spam folder).');
-            setLoading(false);
-            _context4.n = 5;
-            break;
+            if (!(password !== confirmPw)) {
+              _context4.n = 4;
+              break;
+            }
+            return _context4.a(2, setError('Passwords do not match.'));
           case 4:
-            _context4.p = 4;
-            _t4 = _context4.v;
-            setError(firebaseErrorMessage(_t4.code));
-            setLoading(false);
+            setLoading(true);
+            f = fb();
+            if (f) {
+              _context4.n = 5;
+              break;
+            }
+            return _context4.a(2);
           case 5:
+            _context4.p = 5;
+            _context4.n = 6;
+            return f.db.collection('users').doc(pendingGoogle.uid).set({
+              username: username.trim(),
+              email: pendingGoogle.email.toLowerCase(),
+              method: 'google',
+              terminalPasswordHash: simpleHash(password),
+              createdAt: new Date(),
+              xp: 0
+            });
+          case 6:
+            user = {
+              uid: pendingGoogle.uid,
+              username: username.trim(),
+              email: pendingGoogle.email,
+              method: 'google'
+            };
+            saveSession(user);
+            setPendingGoogle(null);
+            onAuth(user);
+            _context4.n = 8;
+            break;
+          case 7:
+            _context4.p = 7;
+            _t4 = _context4.v;
+            setError('Could not save profile. Please try again.');
+            setLoading(false);
+          case 8:
             return _context4.a(2);
         }
-      }, _callee4, null, [[2, 4]]);
+      }, _callee4, null, [[5, 7]]);
     }));
-    return function handleForgotPasswordLookup() {
+    return function handleGoogleSetup() {
       return _ref6.apply(this, arguments);
     };
   }();
-  var handleForgotUsername = /*#__PURE__*/function () {
+
+  // ─────────────────────────────────────────────────────────────────
+  //  Forgot password / username
+  // ─────────────────────────────────────────────────────────────────
+  var handleForgotPassword = /*#__PURE__*/function () {
     var _ref7 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var f, snap, uname, _t5;
+      var f, _t5;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.p = _context5.n) {
           case 0:
             setError('');
             setSuccess('');
-            setLoading(true);
             if (!(!email.trim() || !email.includes('@'))) {
               _context5.n = 1;
               break;
             }
-            setError('Please enter your registered email address.');
-            setLoading(false);
-            return _context5.a(2);
+            return _context5.a(2, setError('Please enter a valid email address.'));
           case 1:
+            setLoading(true);
             f = fb();
             if (f) {
               _context5.n = 2;
@@ -1575,40 +1603,87 @@ function AuthScreen(_ref2) {
           case 2:
             _context5.p = 2;
             _context5.n = 3;
+            return f.auth.sendPasswordResetEmail(email.trim());
+          case 3:
+            setSuccess('Password reset email sent to ' + email + '. Check your inbox and spam folder.');
+            setLoading(false);
+            _context5.n = 5;
+            break;
+          case 4:
+            _context5.p = 4;
+            _t5 = _context5.v;
+            setError(firebaseErrorMessage(_t5.code));
+            setLoading(false);
+          case 5:
+            return _context5.a(2);
+        }
+      }, _callee5, null, [[2, 4]]);
+    }));
+    return function handleForgotPassword() {
+      return _ref7.apply(this, arguments);
+    };
+  }();
+  var handleForgotUsername = /*#__PURE__*/function () {
+    var _ref8 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      var f, snap, _t6;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.p = _context6.n) {
+          case 0:
+            setError('');
+            setSuccess('');
+            if (!(!email.trim() || !email.includes('@'))) {
+              _context6.n = 1;
+              break;
+            }
+            return _context6.a(2, setError('Please enter your registered email address.'));
+          case 1:
+            setLoading(true);
+            f = fb();
+            if (f) {
+              _context6.n = 2;
+              break;
+            }
+            return _context6.a(2);
+          case 2:
+            _context6.p = 2;
+            _context6.n = 3;
             return f.db.collection('users').where('email', '==', email.trim().toLowerCase()).limit(1).get();
           case 3:
-            snap = _context5.v;
+            snap = _context6.v;
             if (!snap.empty) {
-              _context5.n = 4;
+              _context6.n = 4;
               break;
             }
             setError('No account found with this email address.');
             setLoading(false);
-            return _context5.a(2);
+            return _context6.a(2);
           case 4:
-            uname = snap.docs[0].data().username;
-            setSuccess('Your username is: ' + uname);
+            setSuccess('Your username is:  ' + snap.docs[0].data().username);
             setLoading(false);
-            _context5.n = 6;
+            _context6.n = 6;
             break;
           case 5:
-            _context5.p = 5;
-            _t5 = _context5.v;
+            _context6.p = 5;
+            _t6 = _context6.v;
             setError('Could not look up account. Please try again.');
             setLoading(false);
           case 6:
-            return _context5.a(2);
+            return _context6.a(2);
         }
-      }, _callee5, null, [[2, 5]]);
+      }, _callee6, null, [[2, 5]]);
     }));
     return function handleForgotUsername() {
-      return _ref7.apply(this, arguments);
+      return _ref8.apply(this, arguments);
     };
   }();
   var handleKeyDown = function handleKeyDown(e) {
     if (e.key !== 'Enter') return;
-    if (mode === 'login') handleLogin();else if (mode === 'signup') handleSignup();else if (mode === 'forgot_password') handleForgotPasswordLookup();else if (mode === 'forgot_username') handleForgotUsername();
+    if (mode === 'signup') handleSignup();else if (mode === 'login') handleLogin();else if (mode === 'google_setup') handleGoogleSetup();else if (mode === 'forgot_password') handleForgotPassword();else if (mode === 'forgot_username') handleForgotUsername();
   };
+
+  // ─────────────────────────────────────────────────────────────────
+  //  RENDER
+  // ─────────────────────────────────────────────────────────────────
   return /*#__PURE__*/React.createElement("div", {
     className: "auth-gate"
   }, /*#__PURE__*/React.createElement(NoiseCanvas, null), /*#__PURE__*/React.createElement("div", {
@@ -1623,7 +1698,7 @@ function AuthScreen(_ref2) {
     className: "auth-welcome"
   }, /*#__PURE__*/React.createElement("p", {
     className: "auth-welcome-text"
-  }, "Join thousands of people on a path of real self-improvement \u2014 discipline, community, and growth."), /*#__PURE__*/React.createElement("div", {
+  }, "Join a community committed to real self-improvement \u2014 discipline, character, and purpose."), /*#__PURE__*/React.createElement("div", {
     className: "auth-btn-group"
   }, /*#__PURE__*/React.createElement("button", {
     className: "auth-btn-primary",
@@ -1636,7 +1711,7 @@ function AuthScreen(_ref2) {
     disabled: loading
   }, /*#__PURE__*/React.createElement("span", {
     className: "google-icon"
-  }, "G"), " ", loading ? 'Signing in...' : 'Continue with Google'), /*#__PURE__*/React.createElement("div", {
+  }, "G"), loading ? 'Connecting...' : 'Continue with Google'), /*#__PURE__*/React.createElement("div", {
     className: "auth-divider"
   }, /*#__PURE__*/React.createElement("span", null, "Already have an account?")), /*#__PURE__*/React.createElement("button", {
     className: "auth-btn-secondary",
@@ -1646,26 +1721,28 @@ function AuthScreen(_ref2) {
   }, "Sign In")), error && /*#__PURE__*/React.createElement("div", {
     className: "auth-error",
     style: {
-      marginTop: '0.8rem'
+      marginTop: '1rem'
     }
   }, error)), mode === 'signup' && /*#__PURE__*/React.createElement("div", {
     className: "auth-form",
     onKeyDown: handleKeyDown
   }, /*#__PURE__*/React.createElement("div", {
     className: "auth-form-title"
-  }, "CREATE YOUR ACCOUNT"), /*#__PURE__*/React.createElement("div", {
+  }, "CREATE YOUR ACCOUNT"), /*#__PURE__*/React.createElement("p", {
+    className: "auth-google-note"
+  }, "A verification email will be sent to your address. You must confirm it before signing in."), /*#__PURE__*/React.createElement("div", {
     className: "auth-field"
   }, /*#__PURE__*/React.createElement("label", {
     className: "auth-label"
   }, "USERNAME"), /*#__PURE__*/React.createElement("input", {
     className: "auth-input",
+    autoFocus: true,
+    autoComplete: "off",
     value: username,
     onChange: function onChange(e) {
       return setUsername(e.target.value);
     },
-    placeholder: "your_username",
-    autoComplete: "off",
-    autoFocus: true
+    placeholder: "e.g. john_doe (letters, numbers, underscores)"
   })), /*#__PURE__*/React.createElement("div", {
     className: "auth-field"
   }, /*#__PURE__*/React.createElement("label", {
@@ -1673,12 +1750,12 @@ function AuthScreen(_ref2) {
   }, "EMAIL ADDRESS"), /*#__PURE__*/React.createElement("input", {
     className: "auth-input",
     type: "email",
+    autoComplete: "off",
     value: email,
     onChange: function onChange(e) {
       return setEmail(e.target.value);
     },
-    placeholder: "you@email.com",
-    autoComplete: "off"
+    placeholder: "you@email.com"
   })), /*#__PURE__*/React.createElement("div", {
     className: "auth-field"
   }, /*#__PURE__*/React.createElement("label", {
@@ -1692,7 +1769,7 @@ function AuthScreen(_ref2) {
     onChange: function onChange(e) {
       return setPassword(e.target.value);
     },
-    placeholder: "Min 6 characters"
+    placeholder: "Minimum 6 characters"
   }), /*#__PURE__*/React.createElement("button", {
     className: "auth-pw-toggle",
     type: "button",
@@ -1712,12 +1789,10 @@ function AuthScreen(_ref2) {
     onChange: function onChange(e) {
       return setConfirmPw(e.target.value);
     },
-    placeholder: "Repeat password"
+    placeholder: "Repeat your password"
   })), error && /*#__PURE__*/React.createElement("div", {
     className: "auth-error"
-  }, error), success && /*#__PURE__*/React.createElement("div", {
-    className: "auth-success"
-  }, success), /*#__PURE__*/React.createElement("button", {
+  }, error), /*#__PURE__*/React.createElement("button", {
     className: "auth-btn-primary",
     onClick: handleSignup,
     disabled: loading
@@ -1733,7 +1808,51 @@ function AuthScreen(_ref2) {
     onClick: function onClick() {
       return go('welcome');
     }
-  }, "\u2190 Back"))), mode === 'login' && /*#__PURE__*/React.createElement("div", {
+  }, "\u2190 Back"))), mode === 'email_sent' && /*#__PURE__*/React.createElement("div", {
+    className: "auth-form"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "auth-sent-icon"
+  }, "\u2709"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-form-title"
+  }, "CHECK YOUR EMAIL"), /*#__PURE__*/React.createElement("p", {
+    className: "auth-google-note"
+  }, "A verification link has been sent to your email address. Click the link in that email to activate your account."), /*#__PURE__*/React.createElement("div", {
+    className: "auth-sent-steps"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "auth-sent-step"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "auth-step-num"
+  }, "1"), "Open your email inbox"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-sent-step"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "auth-step-num"
+  }, "2"), "Find the email from Fight Club / Firebase"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-sent-step"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "auth-step-num"
+  }, "3"), "Click the verification link inside it"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-sent-step"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "auth-step-num"
+  }, "4"), "Come back here and sign in")), /*#__PURE__*/React.createElement("p", {
+    className: "auth-google-note",
+    style: {
+      marginTop: '0.8rem',
+      color: 'var(--text-dim)'
+    }
+  }, "Cannot find the email? Check your spam or junk folder."), /*#__PURE__*/React.createElement("button", {
+    className: "auth-btn-primary",
+    onClick: function onClick() {
+      return go('login');
+    }
+  }, "I HAVE VERIFIED \u2014 SIGN IN"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-nav-links"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "auth-back",
+    onClick: function onClick() {
+      return go('welcome');
+    }
+  }, "\u2190 Back to start"))), mode === 'login' && /*#__PURE__*/React.createElement("div", {
     className: "auth-form",
     onKeyDown: handleKeyDown
   }, /*#__PURE__*/React.createElement("div", {
@@ -1745,13 +1864,13 @@ function AuthScreen(_ref2) {
   }, "EMAIL ADDRESS"), /*#__PURE__*/React.createElement("input", {
     className: "auth-input",
     type: "email",
+    autoFocus: true,
+    autoComplete: "off",
     value: email,
     onChange: function onChange(e) {
       return setEmail(e.target.value);
     },
-    placeholder: "you@email.com",
-    autoComplete: "off",
-    autoFocus: true
+    placeholder: "you@email.com"
   })), /*#__PURE__*/React.createElement("div", {
     className: "auth-field"
   }, /*#__PURE__*/React.createElement("label", {
@@ -1780,16 +1899,15 @@ function AuthScreen(_ref2) {
     className: "auth-btn-primary",
     onClick: handleLogin,
     disabled: loading
-  }, loading ? 'Signing in...' : 'SIGN IN'), /*#__PURE__*/React.createElement("button", {
+  }, loading ? 'Signing in...' : 'SIGN IN'), /*#__PURE__*/React.createElement("div", {
+    className: "auth-separator"
+  }, "or"), /*#__PURE__*/React.createElement("button", {
     className: "auth-btn-google",
     onClick: handleGoogleSignIn,
-    disabled: loading,
-    style: {
-      marginTop: '0.5rem'
-    }
+    disabled: loading
   }, /*#__PURE__*/React.createElement("span", {
     className: "google-icon"
-  }, "G"), " Sign in with Google"), /*#__PURE__*/React.createElement("div", {
+  }, "G"), " Continue with Google"), /*#__PURE__*/React.createElement("div", {
     className: "auth-nav-links"
   }, /*#__PURE__*/React.createElement("button", {
     className: "auth-link",
@@ -1806,39 +1924,110 @@ function AuthScreen(_ref2) {
     onClick: function onClick() {
       return go('signup');
     }
-  }, "Don't have an account? Sign up"), /*#__PURE__*/React.createElement("button", {
+  }, "New here? Create an account"), /*#__PURE__*/React.createElement("button", {
     className: "auth-back",
     onClick: function onClick() {
       return go('welcome');
     }
-  }, "\u2190 Back"))), mode === 'forgot_password' && /*#__PURE__*/React.createElement("div", {
+  }, "\u2190 Back"))), mode === 'google_setup' && /*#__PURE__*/React.createElement("div", {
+    className: "auth-form",
+    onKeyDown: handleKeyDown
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "auth-form-title"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "google-icon-lg"
+  }, "G"), " COMPLETE YOUR PROFILE"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-google-email-chip"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "google-icon",
+    style: {
+      flexShrink: 0
+    }
+  }, "G"), /*#__PURE__*/React.createElement("span", null, pendingGoogle === null || pendingGoogle === void 0 ? void 0 : pendingGoogle.email)), /*#__PURE__*/React.createElement("p", {
+    className: "auth-google-note"
+  }, "Your Google email is confirmed. Now choose a ", /*#__PURE__*/React.createElement("strong", null, "username"), " and set a ", /*#__PURE__*/React.createElement("strong", null, "terminal password"), ". The terminal password is what you will type on the login screen every time you open the app. It does not have to match your Google password."), /*#__PURE__*/React.createElement("div", {
+    className: "auth-field"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "auth-label"
+  }, "CHOOSE A USERNAME"), /*#__PURE__*/React.createElement("input", {
+    className: "auth-input",
+    autoFocus: true,
+    autoComplete: "off",
+    value: username,
+    onChange: function onChange(e) {
+      return setUsername(e.target.value);
+    },
+    placeholder: "e.g. john_doe (letters, numbers, underscores)"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "auth-field"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "auth-label"
+  }, "SET TERMINAL PASSWORD"), /*#__PURE__*/React.createElement("div", {
+    className: "auth-pw-wrap"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "auth-input",
+    type: showPw ? 'text' : 'password',
+    value: password,
+    onChange: function onChange(e) {
+      return setPassword(e.target.value);
+    },
+    placeholder: "Choose a password (min 6 characters)"
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "auth-pw-toggle",
+    type: "button",
+    onClick: function onClick() {
+      return setShowPw(function (v) {
+        return !v;
+      });
+    }
+  }, showPw ? 'HIDE' : 'SHOW'))), /*#__PURE__*/React.createElement("div", {
+    className: "auth-field"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "auth-label"
+  }, "CONFIRM TERMINAL PASSWORD"), /*#__PURE__*/React.createElement("input", {
+    className: "auth-input",
+    type: showPw ? 'text' : 'password',
+    value: confirmPw,
+    onChange: function onChange(e) {
+      return setConfirmPw(e.target.value);
+    },
+    placeholder: "Repeat your terminal password"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "auth-info-box"
+  }, "Remember these credentials \u2014 you will enter them on the terminal screen every time you open the app:", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "Username:"), " what you type above", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", null, "Password:"), " the terminal password you set above"), error && /*#__PURE__*/React.createElement("div", {
+    className: "auth-error"
+  }, error), /*#__PURE__*/React.createElement("button", {
+    className: "auth-btn-primary",
+    onClick: handleGoogleSetup,
+    disabled: loading
+  }, loading ? 'Saving profile...' : 'SAVE AND ENTER')), mode === 'forgot_password' && /*#__PURE__*/React.createElement("div", {
     className: "auth-form",
     onKeyDown: handleKeyDown
   }, /*#__PURE__*/React.createElement("div", {
     className: "auth-form-title"
   }, "FORGOT PASSWORD"), /*#__PURE__*/React.createElement("p", {
     className: "auth-google-note"
-  }, "Enter your registered email. We will send a password reset link directly to your inbox."), /*#__PURE__*/React.createElement("div", {
+  }, "Enter your registered email address. A password reset link will be sent directly to your inbox."), /*#__PURE__*/React.createElement("div", {
     className: "auth-field"
   }, /*#__PURE__*/React.createElement("label", {
     className: "auth-label"
   }, "YOUR REGISTERED EMAIL"), /*#__PURE__*/React.createElement("input", {
     className: "auth-input",
     type: "email",
+    autoFocus: true,
+    autoComplete: "off",
     value: email,
     onChange: function onChange(e) {
       return setEmail(e.target.value);
     },
-    placeholder: "you@email.com",
-    autoComplete: "off",
-    autoFocus: true
+    placeholder: "you@email.com"
   })), error && /*#__PURE__*/React.createElement("div", {
     className: "auth-error"
   }, error), success && /*#__PURE__*/React.createElement("div", {
     className: "auth-success"
   }, success), !success && /*#__PURE__*/React.createElement("button", {
     className: "auth-btn-primary",
-    onClick: handleForgotPasswordLookup,
+    onClick: handleForgotPassword,
     disabled: loading
   }, loading ? 'Sending...' : 'SEND RESET EMAIL'), success && /*#__PURE__*/React.createElement("button", {
     className: "auth-btn-primary",
@@ -1857,32 +2046,27 @@ function AuthScreen(_ref2) {
     onClick: function onClick() {
       return go('login');
     }
-  }, "\u2190 Back to sign in"), /*#__PURE__*/React.createElement("button", {
-    className: "auth-link",
-    onClick: function onClick() {
-      return go('signup');
-    }
-  }, "Create a new account"))), mode === 'forgot_username' && /*#__PURE__*/React.createElement("div", {
+  }, "\u2190 Back to sign in"))), mode === 'forgot_username' && /*#__PURE__*/React.createElement("div", {
     className: "auth-form",
     onKeyDown: handleKeyDown
   }, /*#__PURE__*/React.createElement("div", {
     className: "auth-form-title"
   }, "FORGOT USERNAME"), /*#__PURE__*/React.createElement("p", {
     className: "auth-google-note"
-  }, "Enter your registered email and we will show you the username linked to it."), /*#__PURE__*/React.createElement("div", {
+  }, "Enter your registered email address and we will show you the username linked to it."), /*#__PURE__*/React.createElement("div", {
     className: "auth-field"
   }, /*#__PURE__*/React.createElement("label", {
     className: "auth-label"
   }, "YOUR REGISTERED EMAIL"), /*#__PURE__*/React.createElement("input", {
     className: "auth-input",
     type: "email",
+    autoFocus: true,
+    autoComplete: "off",
     value: email,
     onChange: function onChange(e) {
       return setEmail(e.target.value);
     },
-    placeholder: "you@email.com",
-    autoComplete: "off",
-    autoFocus: true
+    placeholder: "you@email.com"
   })), error && /*#__PURE__*/React.createElement("div", {
     className: "auth-error"
   }, error), success && /*#__PURE__*/React.createElement("div", {
@@ -1908,17 +2092,12 @@ function AuthScreen(_ref2) {
     onClick: function onClick() {
       return go('login');
     }
-  }, "\u2190 Back to sign in"), /*#__PURE__*/React.createElement("button", {
-    className: "auth-link",
-    onClick: function onClick() {
-      return go('signup');
-    }
-  }, "Create a new account")))));
+  }, "\u2190 Back to sign in")))));
 }
-function EntryGate(_ref8) {
-  var onUnlock = _ref8.onUnlock,
-    user = _ref8.user,
-    onBackToAuth = _ref8.onBackToAuth;
+function EntryGate(_ref9) {
+  var onUnlock = _ref9.onUnlock,
+    user = _ref9.user,
+    onBackToAuth = _ref9.onBackToAuth;
   var BOOT_LINES = [{
     text: '> SYSTEM INITIALIZING...',
     delay: 0,
@@ -1968,34 +2147,34 @@ function EntryGate(_ref8) {
     delay: 6800,
     type: ''
   }];
-  var _useState23 = useState([]),
+  var _useState19 = useState([]),
+    _useState20 = _slicedToArray(_useState19, 2),
+    visibleLines = _useState20[0],
+    setVisibleLines = _useState20[1];
+  var _useState21 = useState('username'),
+    _useState22 = _slicedToArray(_useState21, 2),
+    step = _useState22[0],
+    setStep = _useState22[1]; // username | password
+  var _useState23 = useState(''),
     _useState24 = _slicedToArray(_useState23, 2),
-    visibleLines = _useState24[0],
-    setVisibleLines = _useState24[1];
-  var _useState25 = useState('username'),
+    inputUsername = _useState24[0],
+    setInputUsername = _useState24[1];
+  var _useState25 = useState(''),
     _useState26 = _slicedToArray(_useState25, 2),
-    step = _useState26[0],
-    setStep = _useState26[1]; // username | password
+    inputPassword = _useState26[0],
+    setInputPassword = _useState26[1];
   var _useState27 = useState(''),
     _useState28 = _slicedToArray(_useState27, 2),
-    inputUsername = _useState28[0],
-    setInputUsername = _useState28[1];
+    typedUsername = _useState28[0],
+    setTypedUsername = _useState28[1];
   var _useState29 = useState(''),
     _useState30 = _slicedToArray(_useState29, 2),
-    inputPassword = _useState30[0],
-    setInputPassword = _useState30[1];
-  var _useState31 = useState(''),
+    error = _useState30[0],
+    setError = _useState30[1];
+  var _useState31 = useState(false),
     _useState32 = _slicedToArray(_useState31, 2),
-    typedUsername = _useState32[0],
-    setTypedUsername = _useState32[1];
-  var _useState33 = useState(''),
-    _useState34 = _slicedToArray(_useState33, 2),
-    error = _useState34[0],
-    setError = _useState34[1];
-  var _useState35 = useState(false),
-    _useState36 = _slicedToArray(_useState35, 2),
-    showInput = _useState36[0],
-    setShowInput = _useState36[1];
+    showInput = _useState32[0],
+    setShowInput = _useState32[1];
   var inputRef = useRef(null);
   useEffect(function () {
     var timers = BOOT_LINES.map(function (line, i) {
@@ -2032,53 +2211,81 @@ function EntryGate(_ref8) {
     setStep('password');
     setError('');
   }, [inputUsername, user]);
-  var handlePasswordSubmit = useCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-    var val, f, _t6;
-    return _regenerator().w(function (_context6) {
-      while (1) switch (_context6.p = _context6.n) {
+  var handlePasswordSubmit = useCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+    var val, f, doc, storedHash, _t7, _t8;
+    return _regenerator().w(function (_context7) {
+      while (1) switch (_context7.p = _context7.n) {
         case 0:
           val = inputPassword.trim();
           if (val) {
-            _context6.n = 1;
+            _context7.n = 1;
             break;
           }
-          return _context6.a(2);
+          return _context7.a(2);
         case 1:
-          if (!(user.method === 'google')) {
-            _context6.n = 2;
-            break;
-          }
-          onUnlock();
-          return _context6.a(2);
-        case 2:
-          // Email/password users — re-authenticate with Firebase
           f = window._firebase;
+          if (!(user.method === 'google')) {
+            _context7.n = 6;
+            break;
+          }
           if (f) {
-            _context6.n = 3;
+            _context7.n = 2;
             break;
           }
           onUnlock();
-          return _context6.a(2);
+          return _context7.a(2);
+        case 2:
+          _context7.p = 2;
+          _context7.n = 3;
+          return f.db.collection('users').doc(user.uid).get();
         case 3:
-          _context6.p = 3;
-          _context6.n = 4;
-          return f.auth.signInWithEmailAndPassword(user.email, val);
-        case 4:
-          onUnlock();
-          _context6.n = 6;
+          doc = _context7.v;
+          storedHash = doc.exists ? doc.data().terminalPasswordHash : null;
+          if (storedHash && simpleHash(val) === storedHash) {
+            onUnlock();
+          } else {
+            setError('> INCORRECT PASSWORD. Try again.');
+            setInputPassword('');
+            setTimeout(function () {
+              return setError('');
+            }, 2500);
+          }
+          _context7.n = 5;
           break;
+        case 4:
+          _context7.p = 4;
+          _t7 = _context7.v;
+          // Firestore error — allow entry gracefully
+          onUnlock();
         case 5:
-          _context6.p = 5;
-          _t6 = _context6.v;
+          return _context7.a(2);
+        case 6:
+          if (f) {
+            _context7.n = 7;
+            break;
+          }
+          onUnlock();
+          return _context7.a(2);
+        case 7:
+          _context7.p = 7;
+          _context7.n = 8;
+          return f.auth.signInWithEmailAndPassword(user.email, val);
+        case 8:
+          onUnlock();
+          _context7.n = 10;
+          break;
+        case 9:
+          _context7.p = 9;
+          _t8 = _context7.v;
           setError('> INCORRECT PASSWORD. Try again.');
           setInputPassword('');
           setTimeout(function () {
             return setError('');
           }, 2500);
-        case 6:
-          return _context6.a(2);
+        case 10:
+          return _context7.a(2);
       }
-    }, _callee6, null, [[3, 5]]);
+    }, _callee7, null, [[7, 9], [2, 4]]);
   })), [inputPassword, user, onUnlock]);
   var handleKeyDown = useCallback(function (e) {
     if (e.key === 'Enter') {
@@ -2144,7 +2351,7 @@ function EntryGate(_ref8) {
     className: "entry-error"
   }, error), !error && /*#__PURE__*/React.createElement("div", {
     className: "entry-hint"
-  }, step === 'username' ? '> Identify yourself to gain access.' : user.method === 'google' ? '> Press ENTER — Google accounts bypass password.' : '> Confirm your identity to proceed.'), step === 'username' && /*#__PURE__*/React.createElement("div", {
+  }, step === 'username' ? '> Enter your username to identify yourself.' : user.method === 'google' ? '> Enter the terminal password you set during Google setup.' : '> Enter your account password to proceed.'), step === 'username' && /*#__PURE__*/React.createElement("div", {
     className: "terminal-auth-links"
   }, /*#__PURE__*/React.createElement("button", {
     className: "terminal-link",
@@ -2166,10 +2373,10 @@ function EntryGate(_ref8) {
 
 // ==================== GLITCH TEXT ====================
 
-function GlitchText(_ref0) {
-  var children = _ref0.children,
-    _ref0$className = _ref0.className,
-    className = _ref0$className === void 0 ? '' : _ref0$className;
+function GlitchText(_ref1) {
+  var children = _ref1.children,
+    _ref1$className = _ref1.className,
+    className = _ref1$className === void 0 ? '' : _ref1$className;
   return /*#__PURE__*/React.createElement("span", {
     className: className,
     style: {
@@ -2647,60 +2854,60 @@ function NarratorSVG() {
 }
 
 // Character guide panel - shown at top of sections
-function CharacterGuide(_ref1) {
-  var character = _ref1.character,
-    quote = _ref1.quote,
-    _ref1$align = _ref1.align,
-    align = _ref1$align === void 0 ? 'left' : _ref1$align,
-    _ref1$context = _ref1.context,
-    context = _ref1$context === void 0 ? '' : _ref1$context;
-  var _useState37 = useState(quote),
+function CharacterGuide(_ref10) {
+  var character = _ref10.character,
+    quote = _ref10.quote,
+    _ref10$align = _ref10.align,
+    align = _ref10$align === void 0 ? 'left' : _ref10$align,
+    _ref10$context = _ref10.context,
+    context = _ref10$context === void 0 ? '' : _ref10$context;
+  var _useState33 = useState(quote),
+    _useState34 = _slicedToArray(_useState33, 2),
+    aiQuote = _useState34[0],
+    setAiQuote = _useState34[1];
+  var _useState35 = useState(false),
+    _useState36 = _slicedToArray(_useState35, 2),
+    loading = _useState36[0],
+    setLoading = _useState36[1];
+  var _useState37 = useState(false),
     _useState38 = _slicedToArray(_useState37, 2),
-    aiQuote = _useState38[0],
-    setAiQuote = _useState38[1];
-  var _useState39 = useState(false),
-    _useState40 = _slicedToArray(_useState39, 2),
-    loading = _useState40[0],
-    setLoading = _useState40[1];
-  var _useState41 = useState(false),
-    _useState42 = _slicedToArray(_useState41, 2),
-    refreshed = _useState42[0],
-    setRefreshed = _useState42[1];
+    refreshed = _useState38[0],
+    setRefreshed = _useState38[1];
   var getNewQuote = /*#__PURE__*/function () {
-    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-      var persona, msg, _t7;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.p = _context7.n) {
+    var _ref11 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      var persona, msg, _t9;
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.p = _context8.n) {
           case 0:
             if (!loading) {
-              _context7.n = 1;
+              _context8.n = 1;
               break;
             }
-            return _context7.a(2);
+            return _context8.a(2);
           case 1:
             setLoading(true);
-            _context7.p = 2;
+            _context8.p = 2;
             persona = character === 'tyler' ? 'Tyler Durden from Fight Club. Red leather jacket, sunglasses, cigarette. Charismatic, anarchic, anti-consumerist philosopher.' : 'The Narrator from Fight Club (also known as Jack). Grey suit, small oval sunglasses. Quietly despairing insomniac realizing the truth about himself.';
-            _context7.n = 3;
+            _context8.n = 3;
             return callTyler("You are ".concat(persona, ". Give one short, powerful line (1-2 sentences max) to motivate someone who is about to work on ").concat(context, ". Stay completely in character. No quotation marks. Just the raw line."));
           case 3:
-            msg = _context7.v;
+            msg = _context8.v;
             setAiQuote(msg);
             setRefreshed(true);
-            _context7.n = 5;
+            _context8.n = 5;
             break;
           case 4:
-            _context7.p = 4;
-            _t7 = _context7.v;
+            _context8.p = 4;
+            _t9 = _context8.v;
           case 5:
             setLoading(false);
           case 6:
-            return _context7.a(2);
+            return _context8.a(2);
         }
-      }, _callee7, null, [[2, 4]]);
+      }, _callee8, null, [[2, 4]]);
     }));
     return function getNewQuote() {
-      return _ref10.apply(this, arguments);
+      return _ref11.apply(this, arguments);
     };
   }();
   var isTyler = character === 'tyler';
@@ -2735,36 +2942,36 @@ function CharacterGuide(_ref1) {
 
 // ==================== MISSION BOARD ====================
 
-function MissionBoard(_ref11) {
-  var xp = _ref11.xp,
-    setXp = _ref11.setXp;
-  var _useState43 = useState({}),
+function MissionBoard(_ref12) {
+  var xp = _ref12.xp,
+    setXp = _ref12.setXp;
+  var _useState39 = useState({}),
+    _useState40 = _slicedToArray(_useState39, 2),
+    challengeState = _useState40[0],
+    setChallengeState = _useState40[1];
+  var _useState41 = useState('man'),
+    _useState42 = _slicedToArray(_useState41, 2),
+    genderFilter = _useState42[0],
+    setGenderFilter = _useState42[1];
+  var _useState43 = useState('ALL'),
     _useState44 = _slicedToArray(_useState43, 2),
-    challengeState = _useState44[0],
-    setChallengeState = _useState44[1];
-  var _useState45 = useState('man'),
-    _useState46 = _slicedToArray(_useState45, 2),
-    genderFilter = _useState46[0],
-    setGenderFilter = _useState46[1];
-  var _useState47 = useState('ALL'),
-    _useState48 = _slicedToArray(_useState47, 2),
-    categoryFilter = _useState48[0],
-    setCategoryFilter = _useState48[1];
-  var _useState49 = useState({
+    categoryFilter = _useState44[0],
+    setCategoryFilter = _useState44[1];
+  var _useState45 = useState({
       man: [],
       woman: []
     }),
+    _useState46 = _slicedToArray(_useState45, 2),
+    weeklySpecials = _useState46[0],
+    setWeeklySpecials = _useState46[1];
+  var _useState47 = useState(false),
+    _useState48 = _slicedToArray(_useState47, 2),
+    specialsLoading = _useState48[0],
+    setSpecialsLoading = _useState48[1];
+  var _useState49 = useState(''),
     _useState50 = _slicedToArray(_useState49, 2),
-    weeklySpecials = _useState50[0],
-    setWeeklySpecials = _useState50[1];
-  var _useState51 = useState(false),
-    _useState52 = _slicedToArray(_useState51, 2),
-    specialsLoading = _useState52[0],
-    setSpecialsLoading = _useState52[1];
-  var _useState53 = useState(''),
-    _useState54 = _slicedToArray(_useState53, 2),
-    countdown = _useState54[0],
-    setCountdown = _useState54[1];
+    countdown = _useState50[0],
+    setCountdown = _useState50[1];
   var weekNum = getWeekNumber();
   var rank = getRank(xp);
   var nextRank = getNextRank(rank);
@@ -2794,13 +3001,13 @@ function MissionBoard(_ref11) {
       } catch (_unused3) {}
     }
     var generateSpecials = /*#__PURE__*/function () {
-      var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-        var now, month, makePrompt, _yield$Promise$all, _yield$Promise$all2, manRaw, womanRaw, parse, result, _t8;
-        return _regenerator().w(function (_context8) {
-          while (1) switch (_context8.p = _context8.n) {
+      var _ref13 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+        var now, month, makePrompt, _yield$Promise$all, _yield$Promise$all2, manRaw, womanRaw, parse, result, _t0;
+        return _regenerator().w(function (_context9) {
+          while (1) switch (_context9.p = _context9.n) {
             case 0:
               setSpecialsLoading(true);
-              _context8.p = 1;
+              _context9.p = 1;
               now = new Date();
               month = now.toLocaleString('default', {
                 month: 'long'
@@ -2808,10 +3015,10 @@ function MissionBoard(_ref11) {
               makePrompt = function makePrompt(gender) {
                 return "You are generating weekly special missions for a personal growth app. Week number: ".concat(weekNum, ". Month: ").concat(month, ".\nGenerate exactly 2 missions for ").concat(gender === 'man' ? 'men building character, discipline, and healthy habits' : 'women building confidence, skills, and healthy daily habits', ".\n\nSTRICT RULES \u2014 every mission must follow these:\n- Physically safe: exercises must be at realistic limits \u2014 examples: 25 push-ups, 25 squats, a 1-hour morning walk, 15-minute stretch routine. No extreme workouts, no fasting, no cold water exposure, no physically risky activities.\n- Mentally safe: positive and encouraging tone only. No guilt, shame, or harsh language.\n- Realistic: completable in one week by an average healthy person.\n- Good for the individual, family, and community.\n- Specific: give clear, concrete steps \u2014 not vague advice.\n\nReturn ONLY valid JSON array, no markdown, no explanation:\n[\n  {\n    \"title\": \"SHORT CAPS TITLE (3-5 words)\",\n    \"desc\": \"Clear actionable description with specific numbers/steps. 2-3 sentences.\",\n    \"difficulty\": \"EASY\" or \"MODERATE\" or \"HARD\",\n    \"xp\": number between 35-75,\n    \"category\": \"short category name\",\n    \"mission\": \"One warm, motivating line under 15 words.\"\n  },\n  { second mission }\n]\nWeek ").concat(weekNum, " should feel different from week ").concat(weekNum - 1, ". Make missions feel timely and fresh.");
               };
-              _context8.n = 2;
+              _context9.n = 2;
               return Promise.all([callTyler(makePrompt('man')), callTyler(makePrompt('woman'))]);
             case 2:
-              _yield$Promise$all = _context8.v;
+              _yield$Promise$all = _context9.v;
               _yield$Promise$all2 = _slicedToArray(_yield$Promise$all, 2);
               manRaw = _yield$Promise$all2[0];
               womanRaw = _yield$Promise$all2[1];
@@ -2847,20 +3054,20 @@ function MissionBoard(_ref11) {
                   sessionStorage.setItem(cacheKey, JSON.stringify(result));
                 } catch (_unused5) {}
               }
-              _context8.n = 4;
+              _context9.n = 4;
               break;
             case 3:
-              _context8.p = 3;
-              _t8 = _context8.v;
+              _context9.p = 3;
+              _t0 = _context9.v;
             case 4:
               setSpecialsLoading(false);
             case 5:
-              return _context8.a(2);
+              return _context9.a(2);
           }
-        }, _callee8, null, [[1, 3]]);
+        }, _callee9, null, [[1, 3]]);
       }));
       return function generateSpecials() {
-        return _ref12.apply(this, arguments);
+        return _ref13.apply(this, arguments);
       };
     }();
     generateSpecials();
@@ -2893,23 +3100,23 @@ function MissionBoard(_ref11) {
     });
   };
   var handlePhotoUpload = useCallback(/*#__PURE__*/function () {
-    var _ref13 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(ch, file) {
+    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(ch, file) {
       var reader;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
             if (file) {
-              _context0.n = 1;
+              _context1.n = 1;
               break;
             }
-            return _context0.a(2);
+            return _context1.a(2);
           case 1:
             reader = new FileReader();
             reader.onload = /*#__PURE__*/function () {
-              var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(ev) {
-                var dataUrl, base64, mimeType, photoPreview, allChallenges, nextCh, persona, prompt, msg, _t9, _t0;
-                return _regenerator().w(function (_context9) {
-                  while (1) switch (_context9.p = _context9.n) {
+              var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(ev) {
+                var dataUrl, base64, mimeType, photoPreview, allChallenges, nextCh, persona, prompt, msg, _t1, _t10;
+                return _regenerator().w(function (_context0) {
+                  while (1) switch (_context0.p = _context0.n) {
                     case 0:
                       dataUrl = ev.target.result;
                       base64 = dataUrl.split(',')[1];
@@ -2933,21 +3140,21 @@ function MissionBoard(_ref11) {
                       });
                       persona = ch.gender === 'man' ? 'a man who completed a real character-building mission' : 'a woman who completed a mission reclaiming her authentic self';
                       prompt = "You are Tyler Durden from Fight Club \u2014 raw, philosophical, confrontational, anti-consumerist. \n\n".concat(persona, " just completed this mission: \"").concat(ch.title, "\" \u2014 \"").concat(ch.desc, "\"\n\nThey sent you a photo as proof. Look at it. React to what you actually see in it. Then:\n1. Appreciate their effort with brutal honesty and specific observation about the photo\n2. Suggest their next mission: \"").concat(nextCh ? nextCh.title + ' — ' + nextCh.desc : 'Keep pushing forward', "\"\n3. Give one sharp tip for the rest of today\n\nKeep the total response under 120 words. Raw. Direct. Three clear parts.");
-                      _context9.p = 1;
-                      _context9.n = 2;
+                      _context0.p = 1;
+                      _context0.n = 2;
                       return callTylerWithPhoto(prompt, base64, mimeType);
                     case 2:
-                      _t9 = _context9.v;
-                      if (_t9) {
-                        _context9.n = 4;
+                      _t1 = _context0.v;
+                      if (_t1) {
+                        _context0.n = 4;
                         break;
                       }
-                      _context9.n = 3;
+                      _context0.n = 3;
                       return callTyler("As Tyler Durden, react to ".concat(persona, " completing: \"").concat(ch.title, "\". They sent proof. Appreciate it, suggest next: \"").concat((nextCh === null || nextCh === void 0 ? void 0 : nextCh.title) || 'keep going', "\", give a day tip. 3 parts, under 120 words."));
                     case 3:
-                      _t9 = _context9.v;
+                      _t1 = _context0.v;
                     case 4:
-                      msg = _t9;
+                      msg = _t1;
                       setChallengeState(function (prev) {
                         return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, ch.id, _objectSpread(_objectSpread({}, prev[ch.id]), {}, {
                           status: 'done',
@@ -2955,11 +3162,11 @@ function MissionBoard(_ref11) {
                           tylerMsg: msg
                         })));
                       });
-                      _context9.n = 6;
+                      _context0.n = 6;
                       break;
                     case 5:
-                      _context9.p = 5;
-                      _t0 = _context9.v;
+                      _context0.p = 5;
+                      _t10 = _context0.v;
                       setChallengeState(function (prev) {
                         return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, ch.id, _objectSpread(_objectSpread({}, prev[ch.id]), {}, {
                           status: 'done',
@@ -2968,36 +3175,36 @@ function MissionBoard(_ref11) {
                         })));
                       });
                     case 6:
-                      return _context9.a(2);
+                      return _context0.a(2);
                   }
-                }, _callee9, null, [[1, 5]]);
+                }, _callee0, null, [[1, 5]]);
               }));
               return function (_x7) {
-                return _ref14.apply(this, arguments);
+                return _ref15.apply(this, arguments);
               };
             }();
             reader.readAsDataURL(file);
           case 2:
-            return _context0.a(2);
+            return _context1.a(2);
         }
-      }, _callee0);
+      }, _callee1);
     }));
     return function (_x5, _x6) {
-      return _ref13.apply(this, arguments);
+      return _ref14.apply(this, arguments);
     };
   }(), [setXp]);
   var completeChallenge = /*#__PURE__*/function () {
-    var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(ch) {
-      var st, allChallenges, nextCh, persona, msg, _t1;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.p = _context1.n) {
+    var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(ch) {
+      var st, allChallenges, nextCh, persona, msg, _t11;
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.p = _context10.n) {
           case 0:
             st = getState(ch.id);
             if (!(st.status === 'done')) {
-              _context1.n = 1;
+              _context10.n = 1;
               break;
             }
-            return _context1.a(2);
+            return _context10.a(2);
           case 1:
             setChallengeState(function (prev) {
               return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, ch.id, _objectSpread(_objectSpread({}, st), {}, {
@@ -3015,11 +3222,11 @@ function MissionBoard(_ref11) {
               return c.id !== ch.id;
             });
             persona = ch.gender === 'man' ? 'a man who completed a real character-building mission' : 'a woman who completed a mission reclaiming her authentic self';
-            _context1.p = 2;
-            _context1.n = 3;
+            _context10.p = 2;
+            _context10.n = 3;
             return callTyler("As Tyler Durden, react to ".concat(persona, " completing: \"").concat(ch.title, "\" \u2014 ").concat(ch.desc, ". Then suggest next mission: \"").concat((nextCh === null || nextCh === void 0 ? void 0 : nextCh.title) || 'keep going', "\". Then give one sharp tip for the rest of the day. 3 parts, under 120 words. Raw."));
           case 3:
-            msg = _context1.v;
+            msg = _context10.v;
             setChallengeState(function (prev) {
               return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, ch.id, _objectSpread(_objectSpread({}, prev[ch.id]), {}, {
                 status: 'done',
@@ -3027,11 +3234,11 @@ function MissionBoard(_ref11) {
                 tylerMsg: msg
               })));
             });
-            _context1.n = 5;
+            _context10.n = 5;
             break;
           case 4:
-            _context1.p = 4;
-            _t1 = _context1.v;
+            _context10.p = 4;
+            _t11 = _context10.v;
             setChallengeState(function (prev) {
               return _objectSpread(_objectSpread({}, prev), {}, _defineProperty({}, ch.id, _objectSpread(_objectSpread({}, prev[ch.id]), {}, {
                 status: 'done',
@@ -3040,12 +3247,12 @@ function MissionBoard(_ref11) {
               })));
             });
           case 5:
-            return _context1.a(2);
+            return _context10.a(2);
         }
-      }, _callee1, null, [[2, 4]]);
+      }, _callee10, null, [[2, 4]]);
     }));
     return function completeChallenge(_x8) {
-      return _ref15.apply(this, arguments);
+      return _ref16.apply(this, arguments);
     };
   }();
   var setReflection = function setReflection(id, val) {
@@ -3345,72 +3552,72 @@ function MissionBoard(_ref11) {
 
 // ==================== DEBATE ARENA ====================
 
-function DebateArena(_ref16) {
+function DebateArena(_ref17) {
   var _DEBATE_CATEGORIES$fi;
-  var xp = _ref16.xp,
-    setXp = _ref16.setXp;
-  var _useState55 = useState(DEBATE_TOPICS),
+  var xp = _ref17.xp,
+    setXp = _ref17.setXp;
+  var _useState51 = useState(DEBATE_TOPICS),
+    _useState52 = _slicedToArray(_useState51, 2),
+    debates = _useState52[0],
+    setDebates = _useState52[1];
+  var _useState53 = useState(null),
+    _useState54 = _slicedToArray(_useState53, 2),
+    active = _useState54[0],
+    setActive = _useState54[1];
+  var _useState55 = useState(''),
     _useState56 = _slicedToArray(_useState55, 2),
-    debates = _useState56[0],
-    setDebates = _useState56[1];
-  var _useState57 = useState(null),
+    myArg = _useState56[0],
+    setMyArg = _useState56[1];
+  var _useState57 = useState('for'),
     _useState58 = _slicedToArray(_useState57, 2),
-    active = _useState58[0],
-    setActive = _useState58[1];
-  var _useState59 = useState(''),
+    mySide = _useState58[0],
+    setMySide = _useState58[1];
+  var _useState59 = useState(false),
     _useState60 = _slicedToArray(_useState59, 2),
-    myArg = _useState60[0],
-    setMyArg = _useState60[1];
-  var _useState61 = useState('for'),
+    posting = _useState60[0],
+    setPosting = _useState60[1];
+  var _useState61 = useState(false),
     _useState62 = _slicedToArray(_useState61, 2),
-    mySide = _useState62[0],
-    setMySide = _useState62[1];
-  var _useState63 = useState(false),
+    tylerDebating = _useState62[0],
+    setTylerDebating = _useState62[1];
+  var _useState63 = useState(null),
     _useState64 = _slicedToArray(_useState63, 2),
-    posting = _useState64[0],
-    setPosting = _useState64[1];
+    arenaPhoto = _useState64[0],
+    setArenaPhoto = _useState64[1];
+  // Create debate
   var _useState65 = useState(false),
     _useState66 = _slicedToArray(_useState65, 2),
-    tylerDebating = _useState66[0],
-    setTylerDebating = _useState66[1];
-  var _useState67 = useState(null),
+    showCreate = _useState66[0],
+    setShowCreate = _useState66[1];
+  var _useState67 = useState(''),
     _useState68 = _slicedToArray(_useState67, 2),
-    arenaPhoto = _useState68[0],
-    setArenaPhoto = _useState68[1];
-  // Create debate
-  var _useState69 = useState(false),
+    newTopic = _useState68[0],
+    setNewTopic = _useState68[1];
+  var _useState69 = useState(''),
     _useState70 = _slicedToArray(_useState69, 2),
-    showCreate = _useState70[0],
-    setShowCreate = _useState70[1];
-  var _useState71 = useState(''),
+    newSummary = _useState70[0],
+    setNewSummary = _useState70[1];
+  var _useState71 = useState('society'),
     _useState72 = _slicedToArray(_useState71, 2),
-    newTopic = _useState72[0],
-    setNewTopic = _useState72[1];
-  var _useState73 = useState(''),
+    newCategory = _useState72[0],
+    setNewCategory = _useState72[1];
+  var _useState73 = useState(false),
     _useState74 = _slicedToArray(_useState73, 2),
-    newSummary = _useState74[0],
-    setNewSummary = _useState74[1];
-  var _useState75 = useState('society'),
+    creating = _useState74[0],
+    setCreating = _useState74[1];
+  var _useState75 = useState(''),
     _useState76 = _slicedToArray(_useState75, 2),
-    newCategory = _useState76[0],
-    setNewCategory = _useState76[1];
-  var _useState77 = useState(false),
+    createError = _useState76[0],
+    setCreateError = _useState76[1];
+  var _useState77 = useState('all'),
     _useState78 = _slicedToArray(_useState77, 2),
-    creating = _useState78[0],
-    setCreating = _useState78[1];
-  var _useState79 = useState(''),
-    _useState80 = _slicedToArray(_useState79, 2),
-    createError = _useState80[0],
-    setCreateError = _useState80[1];
-  var _useState81 = useState('all'),
-    _useState82 = _slicedToArray(_useState81, 2),
-    categoryFilter = _useState82[0],
-    setCategoryFilter = _useState82[1];
+    categoryFilter = _useState78[0],
+    setCategoryFilter = _useState78[1];
   // Pending debates waiting for acceptance
-  var _useState83 = useState([]),
-    _useState84 = _slicedToArray(_useState83, 2),
-    pendingDebates = _useState84[0],
-    setPendingDebates = _useState84[1];
+  var _useState79 = useState([]),
+    _useState80 = _slicedToArray(_useState79, 2),
+    pendingDebates = _useState80[0],
+    setPendingDebates = _useState80[1];
   var openDebate = function openDebate(d) {
     return setActive(d.id === active ? null : d.id);
   };
@@ -3418,37 +3625,37 @@ function DebateArena(_ref16) {
     return d.id === active;
   });
   var submitArg = /*#__PURE__*/function () {
-    var _ref17 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-      var argText, argPass, newArg, capturedPhoto, debate, basePrompt, reply, tylerArg, _t10, _t11, _t12;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.p = _context10.n) {
+    var _ref18 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+      var argText, argPass, newArg, capturedPhoto, debate, basePrompt, reply, tylerArg, _t12, _t13, _t14;
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.p = _context11.n) {
           case 0:
             if (!(!myArg.trim() || posting)) {
-              _context10.n = 1;
+              _context11.n = 1;
               break;
             }
-            return _context10.a(2);
+            return _context11.a(2);
           case 1:
             if (!clientFlag(myArg)) {
-              _context10.n = 2;
+              _context11.n = 2;
               break;
             }
             alert('Your argument contains inappropriate language. Please revise it.');
-            return _context10.a(2);
+            return _context11.a(2);
           case 2:
             setPosting(true);
             argText = myArg.trim();
-            _context10.n = 3;
+            _context11.n = 3;
             return moderateContent(argText);
           case 3:
-            argPass = _context10.v;
+            argPass = _context11.v;
             if (argPass) {
-              _context10.n = 4;
+              _context11.n = 4;
               break;
             }
             alert('Your argument was flagged by moderation. Please keep arguments constructive and respectful.');
             setPosting(false);
-            return _context10.a(2);
+            return _context11.a(2);
           case 4:
             newArg = {
               id: Date.now(),
@@ -3472,38 +3679,38 @@ function DebateArena(_ref16) {
             setArenaPhoto(null);
             // Tyler counter-argues
             setTylerDebating(true);
-            _context10.p = 5;
+            _context11.p = 5;
             debate = debates.find(function (d) {
               return d.id === active;
             });
             basePrompt = "Debate topic: \"".concat(debate.topic, "\". The user argued on the ").concat(mySide === 'for' ? 'FOR' : 'AGAINST', " side and said: \"").concat(newArg.text, "\".").concat(capturedPhoto ? ' They also attached an evidence photo — look at it carefully and reference what you see.' : '', " As Tyler Durden, give a sharp counter-argument. One paragraph. Raw. Confrontational. No diplomacy. Challenge their logic or their motives.");
             if (!capturedPhoto) {
-              _context10.n = 9;
+              _context11.n = 9;
               break;
             }
-            _context10.n = 6;
+            _context11.n = 6;
             return callTylerWithPhoto(basePrompt, capturedPhoto.base64, capturedPhoto.mime);
           case 6:
-            _t11 = _context10.v;
-            if (_t11) {
-              _context10.n = 8;
+            _t13 = _context11.v;
+            if (_t13) {
+              _context11.n = 8;
               break;
             }
-            _context10.n = 7;
+            _context11.n = 7;
             return callTyler(basePrompt);
           case 7:
-            _t11 = _context10.v;
+            _t13 = _context11.v;
           case 8:
-            _t10 = _t11;
-            _context10.n = 11;
+            _t12 = _t13;
+            _context11.n = 11;
             break;
           case 9:
-            _context10.n = 10;
+            _context11.n = 10;
             return callTyler(basePrompt);
           case 10:
-            _t10 = _context10.v;
+            _t12 = _context11.v;
           case 11:
-            reply = _t10;
+            reply = _t12;
             tylerArg = {
               id: Date.now() + 1,
               author: 'TYLER_DURDEN',
@@ -3518,45 +3725,45 @@ function DebateArena(_ref16) {
                 return _objectSpread(_objectSpread({}, d), {}, _defineProperty({}, side, [].concat(_toConsumableArray(d[side]), [tylerArg])));
               });
             });
-            _context10.n = 13;
+            _context11.n = 13;
             break;
           case 12:
-            _context10.p = 12;
-            _t12 = _context10.v;
+            _context11.p = 12;
+            _t14 = _context11.v;
           case 13:
             setTylerDebating(false);
           case 14:
-            return _context10.a(2);
+            return _context11.a(2);
         }
-      }, _callee10, null, [[5, 12]]);
+      }, _callee11, null, [[5, 12]]);
     }));
     return function submitArg() {
-      return _ref17.apply(this, arguments);
+      return _ref18.apply(this, arguments);
     };
   }();
 
   // AI moderation check
   var moderateContent = /*#__PURE__*/function () {
-    var _ref18 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(text) {
-      var res, _t13;
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.p = _context11.n) {
+    var _ref19 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(text) {
+      var res, _t15;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.p = _context12.n) {
           case 0:
-            _context11.p = 0;
-            _context11.n = 1;
+            _context12.p = 0;
+            _context12.n = 1;
             return callTyler("You are a content moderator. Respond with ONLY \"PASS\" or \"FAIL\". \nCheck if this text contains: hate speech, slurs, explicit sexual content, threats, harassment, calls for violence, or targeted abuse.\nText: \"".concat(text.slice(0, 400), "\"\nReply PASS if acceptable for a general self-improvement debate forum. Reply FAIL if it violates these rules. Nothing else."));
           case 1:
-            res = _context11.v;
-            return _context11.a(2, res.trim().toUpperCase().startsWith('PASS'));
+            res = _context12.v;
+            return _context12.a(2, res.trim().toUpperCase().startsWith('PASS'));
           case 2:
-            _context11.p = 2;
-            _t13 = _context11.v;
-            return _context11.a(2, true);
+            _context12.p = 2;
+            _t15 = _context12.v;
+            return _context12.a(2, true);
         }
-      }, _callee11, null, [[0, 2]]);
+      }, _callee12, null, [[0, 2]]);
     }));
     return function moderateContent(_x9) {
-      return _ref18.apply(this, arguments);
+      return _ref19.apply(this, arguments);
     };
   }();
 
@@ -3565,45 +3772,45 @@ function DebateArena(_ref16) {
     return containsTaboo(text);
   };
   var createDebate = /*#__PURE__*/function () {
-    var _ref19 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+    var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
       var pass, debate;
-      return _regenerator().w(function (_context12) {
-        while (1) switch (_context12.n) {
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
           case 0:
             if (!(!newTopic.trim() || !newSummary.trim())) {
-              _context12.n = 1;
+              _context13.n = 1;
               break;
             }
             setCreateError('Please fill in both the topic and a brief description.');
-            return _context12.a(2);
+            return _context13.a(2);
           case 1:
             if (!(newTopic.trim().length < 10)) {
-              _context12.n = 2;
+              _context13.n = 2;
               break;
             }
             setCreateError('Topic must be at least 10 characters.');
-            return _context12.a(2);
+            return _context13.a(2);
           case 2:
             if (!(clientFlag(newTopic) || clientFlag(newSummary))) {
-              _context12.n = 3;
+              _context13.n = 3;
               break;
             }
             setCreateError('Your topic contains inappropriate language. Please revise it.');
-            return _context12.a(2);
+            return _context13.a(2);
           case 3:
             setCreating(true);
             setCreateError('');
-            _context12.n = 4;
+            _context13.n = 4;
             return moderateContent(newTopic + ' ' + newSummary);
           case 4:
-            pass = _context12.v;
+            pass = _context13.v;
             if (pass) {
-              _context12.n = 5;
+              _context13.n = 5;
               break;
             }
             setCreateError('This topic was flagged by our moderation system. Please keep debates on constructive real-world topics.');
             setCreating(false);
-            return _context12.a(2);
+            return _context13.a(2);
           case 5:
             debate = {
               id: Date.now(),
@@ -3625,12 +3832,12 @@ function DebateArena(_ref16) {
             setShowCreate(false);
             setCreating(false);
           case 6:
-            return _context12.a(2);
+            return _context13.a(2);
         }
-      }, _callee12);
+      }, _callee13);
     }));
     return function createDebate() {
-      return _ref19.apply(this, arguments);
+      return _ref20.apply(this, arguments);
     };
   }();
   var acceptDebate = function acceptDebate(debateId) {
@@ -4009,22 +4216,22 @@ function DebateArena(_ref16) {
 // ==================== CONFESSION WALL ====================
 
 function ConfessionWall() {
-  var _useState85 = useState(SEED_CONFESSIONS),
+  var _useState81 = useState(SEED_CONFESSIONS),
+    _useState82 = _slicedToArray(_useState81, 2),
+    confessions = _useState82[0],
+    setConfessions = _useState82[1];
+  var _useState83 = useState(''),
+    _useState84 = _slicedToArray(_useState83, 2),
+    text = _useState84[0],
+    setText = _useState84[1];
+  var _useState85 = useState('trending'),
     _useState86 = _slicedToArray(_useState85, 2),
-    confessions = _useState86[0],
-    setConfessions = _useState86[1];
-  var _useState87 = useState(''),
+    view = _useState86[0],
+    setView = _useState86[1];
+  var _useState87 = useState(null),
     _useState88 = _slicedToArray(_useState87, 2),
-    text = _useState88[0],
-    setText = _useState88[1];
-  var _useState89 = useState('trending'),
-    _useState90 = _slicedToArray(_useState89, 2),
-    view = _useState90[0],
-    setView = _useState90[1];
-  var _useState91 = useState(null),
-    _useState92 = _slicedToArray(_useState91, 2),
-    glitchId = _useState92[0],
-    setGlitchId = _useState92[1];
+    glitchId = _useState88[0],
+    setGlitchId = _useState88[1];
   useEffect(function () {
     var t = setInterval(function () {
       var ids = confessions.map(function (c) {
@@ -4186,21 +4393,21 @@ function ConfessionWall() {
 
 // ==================== MAIN APP ====================
 
-function MainApp(_ref20) {
-  var user = _ref20.user,
-    onLogout = _ref20.onLogout;
-  var _useState93 = useState(0),
+function MainApp(_ref21) {
+  var user = _ref21.user,
+    onLogout = _ref21.onLogout;
+  var _useState89 = useState(0),
+    _useState90 = _slicedToArray(_useState89, 2),
+    xp = _useState90[0],
+    setXp = _useState90[1];
+  var _useState91 = useState('missions'),
+    _useState92 = _slicedToArray(_useState91, 2),
+    tab = _useState92[0],
+    setTab = _useState92[1];
+  var _useState93 = useState(false),
     _useState94 = _slicedToArray(_useState93, 2),
-    xp = _useState94[0],
-    setXp = _useState94[1];
-  var _useState95 = useState('missions'),
-    _useState96 = _slicedToArray(_useState95, 2),
-    tab = _useState96[0],
-    setTab = _useState96[1];
-  var _useState97 = useState(false),
-    _useState98 = _slicedToArray(_useState97, 2),
-    showUserMenu = _useState98[0],
-    setShowUserMenu = _useState98[1];
+    showUserMenu = _useState94[0],
+    setShowUserMenu = _useState94[1];
   var navRef = useRef(null);
   var userBtnRef = useRef(null);
 
@@ -4232,11 +4439,11 @@ function MainApp(_ref20) {
     "data-text": "FIGHT CLUB"
   }, "FIGHT CLUB"), /*#__PURE__*/React.createElement("div", {
     className: "nav-tabs"
-  }, [['missions', 'MISSIONS', 'MISS'], ['arena', 'ARENA', 'AREN'], ['wall', 'CONFESSIONS', 'CONF']].map(function (_ref21) {
-    var _ref22 = _slicedToArray(_ref21, 3),
-      key = _ref22[0],
-      label = _ref22[1],
-      short = _ref22[2];
+  }, [['missions', 'MISSIONS', 'MISS'], ['arena', 'ARENA', 'AREN'], ['wall', 'CONFESSIONS', 'CONF']].map(function (_ref22) {
+    var _ref23 = _slicedToArray(_ref22, 3),
+      key = _ref23[0],
+      label = _ref23[1],
+      short = _ref23[2];
     return /*#__PURE__*/React.createElement("button", {
       key: key,
       className: "nav-tab ".concat(tab === key ? 'active' : ''),
@@ -4331,20 +4538,20 @@ function MainApp(_ref20) {
 // ==================== ROOT ====================
 
 function App() {
-  var _useState99 = useState(function () {
+  var _useState95 = useState(function () {
       return getSession();
     }),
+    _useState96 = _slicedToArray(_useState95, 2),
+    user = _useState96[0],
+    setUser = _useState96[1];
+  var _useState97 = useState(false),
+    _useState98 = _slicedToArray(_useState97, 2),
+    unlocked = _useState98[0],
+    setUnlocked = _useState98[1];
+  var _useState99 = useState('welcome'),
     _useState100 = _slicedToArray(_useState99, 2),
-    user = _useState100[0],
-    setUser = _useState100[1];
-  var _useState101 = useState(false),
-    _useState102 = _slicedToArray(_useState101, 2),
-    unlocked = _useState102[0],
-    setUnlocked = _useState102[1];
-  var _useState103 = useState('welcome'),
-    _useState104 = _slicedToArray(_useState103, 2),
-    initialMode = _useState104[0],
-    setInitialMode = _useState104[1];
+    initialMode = _useState100[0],
+    setInitialMode = _useState100[1];
   var handleAuth = function handleAuth(u) {
     setUser(u);
     setUnlocked(false);
