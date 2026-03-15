@@ -1344,7 +1344,8 @@ function AuthScreen(_ref2) {
             user = {
               uid: cred.user.uid,
               username: username.trim(),
-              email: cred.user.email
+              email: cred.user.email,
+              method: 'email'
             };
             saveSession(user);
             setSuccess('Account created! A verification email has been sent to ' + email + '. Please verify before signing in.');
@@ -1412,7 +1413,8 @@ function AuthScreen(_ref2) {
             user = {
               uid: cred.user.uid,
               username: uname,
-              email: cred.user.email
+              email: cred.user.email,
+              method: 'email'
             };
             saveSession(user);
             onAuth(user);
@@ -1480,7 +1482,8 @@ function AuthScreen(_ref2) {
             user = {
               uid: uid,
               username: uname,
-              email: cred.user.email
+              email: cred.user.email,
+              method: 'google'
             };
             saveSession(user);
             onAuth(user);
@@ -2041,34 +2044,41 @@ function EntryGate(_ref8) {
           }
           return _context6.a(2);
         case 1:
-          // Re-authenticate with Firebase to confirm password at terminal
-          f = window._firebase;
-          if (f) {
+          if (!(user.method === 'google')) {
             _context6.n = 2;
             break;
           }
           onUnlock();
           return _context6.a(2);
         case 2:
-          _context6.p = 2;
-          _context6.n = 3;
-          return f.auth.signInWithEmailAndPassword(user.email, val);
-        case 3:
+          // Email/password users — re-authenticate with Firebase
+          f = window._firebase;
+          if (f) {
+            _context6.n = 3;
+            break;
+          }
           onUnlock();
-          _context6.n = 5;
-          break;
+          return _context6.a(2);
+        case 3:
+          _context6.p = 3;
+          _context6.n = 4;
+          return f.auth.signInWithEmailAndPassword(user.email, val);
         case 4:
-          _context6.p = 4;
+          onUnlock();
+          _context6.n = 6;
+          break;
+        case 5:
+          _context6.p = 5;
           _t6 = _context6.v;
           setError('> INCORRECT PASSWORD. Try again.');
           setInputPassword('');
           setTimeout(function () {
             return setError('');
           }, 2500);
-        case 5:
+        case 6:
           return _context6.a(2);
       }
-    }, _callee6, null, [[2, 4]]);
+    }, _callee6, null, [[3, 5]]);
   })), [inputPassword, user, onUnlock]);
   var handleKeyDown = useCallback(function (e) {
     if (e.key === 'Enter') {
@@ -2134,7 +2144,7 @@ function EntryGate(_ref8) {
     className: "entry-error"
   }, error), !error && /*#__PURE__*/React.createElement("div", {
     className: "entry-hint"
-  }, step === 'username' ? '> Identify yourself to gain access.' : '> Confirm your identity to proceed.'), step === 'username' && /*#__PURE__*/React.createElement("div", {
+  }, step === 'username' ? '> Identify yourself to gain access.' : user.method === 'google' ? '> Press ENTER — Google accounts bypass password.' : '> Confirm your identity to proceed.'), step === 'username' && /*#__PURE__*/React.createElement("div", {
     className: "terminal-auth-links"
   }, /*#__PURE__*/React.createElement("button", {
     className: "terminal-link",
