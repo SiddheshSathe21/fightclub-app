@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIGHT CLUB</title>
+
+  <!-- ── Google Fonts ──────────────────────────────────────────────── -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rubik+Dirt&family=Share+Tech+Mono&family=VT323&family=Bebas+Neue&family=Kaushan+Script&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ── App Styles ────────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- ── React (production builds) ────────────────────────────────── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+  <!-- ── Firebase SDKs ─────────────────────────────────────────────── -->
+  <!--
+    Get your config from:
+    Firebase Console → Project Settings → Your apps → Web → Config
+    Then paste the values into js/firebase-config.js
+  -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+</head>
+<body>
+
+  <!-- React mounts here -->
+  <div id="root"></div>
+
+  <!-- ── App Logic ─────────────────────────────────────────────────── -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>

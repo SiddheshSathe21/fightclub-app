@@ -1,0 +1,35 @@
+// ============================================================
+//  FIRESTORE SECURITY RULES
+//
+//  Paste this into:
+//  Firebase Console → Firestore → Rules tab → Publish
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read and write their own profile
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Debates — any logged-in user can read all, write their own
+    match /debates/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null
+        && resource.data.authorUid == request.auth.uid;
+    }
+
+    // Confessions — any logged-in user can post and read
+    match /confessions/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null
+        && resource.data.authorUid == request.auth.uid;
+    }
+  }
+}
