@@ -1407,7 +1407,9 @@ function AuthScreen(_ref2) {
               uid: cred.user.uid,
               username: uname,
               email: cred.user.email,
-              method: 'email'
+              method: 'email',
+              xp: (doc.exists && doc.data().xp) ? Number(doc.data().xp) : 0,
+              completedIds: (doc.exists && doc.data().completedIds) ? doc.data().completedIds : []
             };
             saveSession(user);
             onAuth(user);
@@ -1465,7 +1467,9 @@ function AuthScreen(_ref2) {
                 uid: uid,
                 username: data.username,
                 email: cred.user.email,
-                method: 'google'
+                method: 'google',
+                xp: data.xp ? Number(data.xp) : 0,
+                completedIds: data.completedIds || []
               };
               saveSession(user);
               onAuth(user);
@@ -1554,7 +1558,9 @@ function AuthScreen(_ref2) {
               uid: pendingGoogle.uid,
               username: username.trim(),
               email: pendingGoogle.email,
-              method: 'google'
+              method: 'google',
+              xp: 0,
+              completedIds: []
             };
             saveSession(user);
             setPendingGoogle(null);
@@ -2944,8 +2950,18 @@ function CharacterGuide(_ref10) {
 
 function MissionBoard(_ref12) {
   var xp = _ref12.xp,
-    setXp = _ref12.setXp;
-  var _useState39 = useState({}),
+    setXp = _ref12.setXp,
+    user = _ref12.user;
+
+  // Seed already-completed missions from the user's stored completedIds
+  var _useState39 = useState(function() {
+    var initial = {};
+    var ids = (user && user.completedIds) ? user.completedIds : [];
+    ids.forEach(function(id) {
+      initial[id] = { status: 'done', reflection: '', tylerMsg: '', loading: false, fromHistory: true };
+    });
+    return initial;
+  }),
     _useState40 = _slicedToArray(_useState39, 2),
     challengeState = _useState40[0],
     setChallengeState = _useState40[1];
@@ -3162,6 +3178,23 @@ function MissionBoard(_ref12) {
                           tylerMsg: msg
                         })));
                       });
+                      // Persist completed mission ID to Firestore
+                      (function() {
+                        var _f = getFirebase();
+                        if (_f && user && user.uid) {
+                          _f.db.collection('users').doc(user.uid).update({
+                            completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
+                          }).catch(function(e) { console.warn('completion save failed:', e.message); });
+                          // Keep session in sync too
+                          try {
+                            var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
+                            if (_sess) {
+                              _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
+                              sessionStorage.setItem('fc_session', JSON.stringify(_sess));
+                            }
+                          } catch(_e) {}
+                        }
+                      })();
                       _context0.n = 6;
                       break;
                     case 5:
@@ -3174,6 +3207,22 @@ function MissionBoard(_ref12) {
                           tylerMsg: "Proof received. You showed up. That puts you ahead of everyone who only planned to. Now — do it again tomorrow."
                         })));
                       });
+                      // Persist completed mission ID to Firestore (error fallback path)
+                      (function() {
+                        var _f = getFirebase();
+                        if (_f && user && user.uid) {
+                          _f.db.collection('users').doc(user.uid).update({
+                            completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
+                          }).catch(function(e) { console.warn('completion save failed:', e.message); });
+                          try {
+                            var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
+                            if (_sess) {
+                              _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
+                              sessionStorage.setItem('fc_session', JSON.stringify(_sess));
+                            }
+                          } catch(_e) {}
+                        }
+                      })();
                     case 6:
                       return _context0.a(2);
                   }
@@ -3192,7 +3241,7 @@ function MissionBoard(_ref12) {
     return function (_x5, _x6) {
       return _ref14.apply(this, arguments);
     };
-  }(), [setXp]);
+  }(), [setXp, user]);
   var completeChallenge = /*#__PURE__*/function () {
     var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(ch) {
       var st, allChallenges, nextCh, persona, msg, _t11;
@@ -3234,6 +3283,22 @@ function MissionBoard(_ref12) {
                 tylerMsg: msg
               })));
             });
+            // Persist completed mission ID to Firestore
+            (function() {
+              var _f = getFirebase();
+              if (_f && user && user.uid) {
+                _f.db.collection('users').doc(user.uid).update({
+                  completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
+                }).catch(function(e) { console.warn('completion save failed:', e.message); });
+                try {
+                  var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
+                  if (_sess) {
+                    _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
+                    sessionStorage.setItem('fc_session', JSON.stringify(_sess));
+                  }
+                } catch(_e) {}
+              }
+            })();
             _context10.n = 5;
             break;
           case 4:
@@ -3246,6 +3311,22 @@ function MissionBoard(_ref12) {
                 tylerMsg: "You did it. That is one. The work does not stop here."
               })));
             });
+            // Persist completed mission ID to Firestore (error fallback path)
+            (function() {
+              var _f = getFirebase();
+              if (_f && user && user.uid) {
+                _f.db.collection('users').doc(user.uid).update({
+                  completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
+                }).catch(function(e) { console.warn('completion save failed:', e.message); });
+                try {
+                  var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
+                  if (_sess) {
+                    _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
+                    sessionStorage.setItem('fc_session', JSON.stringify(_sess));
+                  }
+                } catch(_e) {}
+              }
+            })();
           case 5:
             return _context10.a(2);
         }
@@ -4396,10 +4477,30 @@ function ConfessionWall() {
 function MainApp(_ref21) {
   var user = _ref21.user,
     onLogout = _ref21.onLogout;
-  var _useState89 = useState(0),
+  var _useState89 = useState(user.xp || 0),
     _useState90 = _slicedToArray(_useState89, 2),
     xp = _useState90[0],
-    setXp = _useState90[1];
+    setXpRaw = _useState90[1];
+
+  // Persists XP to Firestore and session storage whenever it changes
+  var setXp = useCallback(function(updater) {
+    setXpRaw(function(prev) {
+      var next = typeof updater === 'function' ? updater(prev) : updater;
+      // Write to Firestore
+      var f = getFirebase();
+      if (f && user && user.uid) {
+        f.db.collection('users').doc(user.uid)
+          .update({ xp: next })
+          .catch(function(e) { console.warn('XP save failed:', e.message); });
+      }
+      // Also keep session in sync so a page refresh doesn't reset
+      try {
+        var sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
+        if (sess) { sess.xp = next; sessionStorage.setItem('fc_session', JSON.stringify(sess)); }
+      } catch(_e) {}
+      return next;
+    });
+  }, [user]);
   var _useState91 = useState('missions'),
     _useState92 = _slicedToArray(_useState91, 2),
     tab = _useState92[0],
@@ -4528,7 +4629,8 @@ function MainApp(_ref21) {
     }
   }, "\u23FB Sign Out")))), tab === 'missions' && /*#__PURE__*/React.createElement(MissionBoard, {
     xp: xp,
-    setXp: setXp
+    setXp: setXp,
+    user: user
   }), tab === 'arena' && /*#__PURE__*/React.createElement(DebateArena, {
     xp: xp,
     setXp: setXp
