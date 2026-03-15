@@ -3602,13 +3602,8 @@ textarea:focus-visible {
   border: 1px solid rgba(0,191,165,0.12);
   border-left: 2px solid var(--red);
   animation: fadeIn 0.4s ease;
-  max-height: 220px;           /* cap it — scroll if Tyler goes long  */
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--red-dim) transparent;
+  overflow: visible;
 }
-.tyler-response::-webkit-scrollbar { width: 3px; }
-.tyler-response::-webkit-scrollbar-thumb { background: var(--red-dim); }
 
 /* ── Tyler response label ────────────────────────────────────────── */
 .tyler-response-label {
@@ -3785,7 +3780,7 @@ textarea:focus-visible {
 
 /* ── Mobile overrides ─────────────────────────────────────────────── */
 @media (max-width: 479px) {
-  .tyler-response { max-height: 180px; padding: 0.7rem 0.8rem; }
+  .tyler-response { padding: 0.7rem 0.8rem; }
   .tyler-response-text { font-size: 0.72rem; line-height: 1.6; }
   .reflection-area { font-size: 0.73rem; min-height: 60px; }
   .btn-primary, .btn-secondary, .btn-green {
