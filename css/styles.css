@@ -587,8 +587,11 @@ body {
 .ch-difficulty {
   font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
   padding: 0.2rem 0.5rem; border: 1px solid;
-  display: inline-block; margin-bottom: 1rem;
-  width: auto;
+  display: inline-block;
+  width: fit-content;
+  max-width: fit-content;
+  align-self: flex-start;
+  margin-bottom: 1rem;
 }
 .ch-difficulty.EASY     { color: var(--green);   border-color: rgba(0,255,65,0.2); }
 .ch-difficulty.MODERATE { color: #ffab00;         border-color: rgba(255,171,0,0.3); }
