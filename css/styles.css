@@ -588,12 +588,11 @@ body {
   font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
   padding: 0.2rem 0.5rem; border: 1px solid;
   display: inline-block; margin-bottom: 1rem;
+  width: auto;
 }
-.ch-difficulty.EASY { color: var(--green); border-color: rgba(0,255,65,0.2); }
-.ch-difficulty.MODERATE { color: #ffab00; border-color: rgba(255,171,0,0.3); }
-.ch-difficulty.HARD { color: #FF7043; border-color: rgba(255,112,67,0.3); }
-.ch-difficulty.MODERATE { color: #ffab00; border-color: rgba(255,210,0,0.3); }
-.ch-difficulty.MODERATE { color: #00BFA5; border-color: rgba(0,191,165,0.3); }
+.ch-difficulty.EASY     { color: var(--green);   border-color: rgba(0,255,65,0.2); }
+.ch-difficulty.MODERATE { color: #ffab00;         border-color: rgba(255,171,0,0.3); }
+.ch-difficulty.HARD     { color: #FF7043;         border-color: rgba(255,112,67,0.3); }
 
 .ch-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .btn-primary {
