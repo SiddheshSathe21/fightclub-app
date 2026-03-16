@@ -2158,15 +2158,9 @@ function EntryGate(_ref9) {
         visibleLines.map(function(line, i) {
           return React.createElement('span', {
             key: i,
-            className: 'term-line ' + line.type,
-            style: line.text === 'WELCOME TO FIGHT CLUB.' ? {
-              fontFamily: 'var(--font-head)',
-              fontSize: 'clamp(1.4rem, 5vw, 2rem)',
-              letterSpacing: '0.15em',
-              color: 'var(--red-bright)',
-              marginTop: '0.5rem',
-              display: 'block'
-            } : {}
+            className: line.text === 'WELCOME TO FIGHT CLUB.'
+              ? 'entry-welcome'
+              : 'term-line ' + line.type
           }, line.text);
         }),
         !done && React.createElement('span', { className: 'term-cursor' })
