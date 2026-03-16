@@ -3793,3 +3793,552 @@ textarea:focus-visible {
   }
   .ch-completed-badge { font-size: 0.6rem; }
 }
+
+
+
+/* ================================================================
+   LIVE ARENA — Chat Rooms System
+   ================================================================ */
+
+/* ── Topics view layout ──────────────────────────────────────────── */
+.arena-intro-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red-bright);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.arena-intro-text {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  flex: 1;
+  min-width: 200px;
+}
+.arena-intro-text strong { color: var(--text-bright); }
+.arena-intro-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--red-bright);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.arena-live-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--red-bright);
+  box-shadow: 0 0 6px var(--red-bright);
+  animation: pulse-red 1.5s infinite;
+  flex-shrink: 0;
+}
+
+/* ── Create room ─────────────────────────────────────────────────── */
+.arena-create-wrap { margin-bottom: 1.8rem; }
+.arena-create-btn {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  border: 1px solid var(--red-dim);
+  color: var(--red-bright);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+  min-height: 42px;
+}
+.arena-create-btn:hover { background: rgba(0,191,165,0.06); border-color: var(--red-bright); }
+
+.arena-create-form {
+  padding: 1.2rem;
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--surface);
+  animation: fadeIn 0.2s;
+}
+
+/* ── Loading state ───────────────────────────────────────────────── */
+.arena-loading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 2rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+}
+.arena-loading-dots {
+  display: flex;
+  gap: 0.3rem;
+  font-size: 1rem;
+  color: var(--red-bright);
+}
+.arena-loading-dots .dot-pulse { animation: blink 1s infinite; font-size: 1rem; }
+.arena-loading-dots .dot-pulse:nth-child(2) { animation-delay: 0.25s; }
+.arena-loading-dots .dot-pulse:nth-child(3) { animation-delay: 0.5s; }
+
+/* ── Rooms grid ──────────────────────────────────────────────────── */
+.arena-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+  gap: 1rem;
+}
+
+.arena-room-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.2rem 1.4rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+  animation: card-in 0.35s ease both;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.arena-room-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 0;
+  background: var(--red-bright);
+  transition: height 0.3s;
+}
+.arena-room-card:hover {
+  border-color: var(--border-bright);
+  background: var(--surface2);
+  transform: translateY(-1px);
+}
+.arena-room-card:hover::before { height: 100%; }
+.arena-room-card.expiring {
+  border-color: rgba(212,37,107,0.3);
+}
+.arena-room-card.expiring::before { background: var(--magenta); }
+
+.arena-room-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.arena-room-cat {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  background: rgba(0,191,165,0.08);
+  border: 1px solid var(--border);
+  padding: 0.18rem 0.55rem;
+}
+.arena-room-timer {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.arena-room-timer.expiring { color: var(--magenta); animation: blink 1s infinite; }
+
+.arena-room-topic {
+  font-family: var(--font-head);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  text-transform: uppercase;
+  color: var(--text-bright);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+.arena-room-summary {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+.arena-room-footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.arena-room-stat {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+.arena-enter-label {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: var(--red-bright);
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CHAT ROOM VIEW
+   ════════════════════════════════════════════════════════════════ */
+.arena-chat-wrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+  background: var(--bg);
+  position: relative;
+}
+
+/* ── Chat header ─────────────────────────────────────────────────── */
+.arena-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem clamp(0.8rem, 2vw, 1.5rem);
+  background: rgba(5,14,12,0.98);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  min-height: 56px;
+  backdrop-filter: blur(8px);
+}
+.arena-back-btn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 34px;
+}
+.arena-back-btn:hover { border-color: var(--border-bright); color: var(--text); }
+.arena-chat-header-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.arena-chat-cat {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: var(--red-bright);
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+.arena-chat-topic {
+  font-family: var(--font-head);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  text-transform: uppercase;
+  color: var(--text-bright);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.arena-chat-header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+.arena-chat-timer {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.arena-chat-timer.expiring { color: var(--magenta); animation: blink 1s infinite; }
+.arena-chat-count {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* ── Message feed ────────────────────────────────────────────────── */
+.arena-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: clamp(0.8rem, 2vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  scroll-behavior: smooth;
+}
+.arena-messages::-webkit-scrollbar { width: 3px; }
+.arena-messages::-webkit-scrollbar-thumb { background: var(--red-dim); }
+
+.arena-empty-chat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 0.5rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.arena-empty-icon {
+  font-size: 2.5rem;
+  color: var(--red);
+  opacity: 0.3;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Message bubble ──────────────────────────────────────────────── */
+.arena-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-width: 75%;
+  align-self: flex-start;
+  animation: fadeIn 0.25s ease;
+}
+.arena-msg-me {
+  align-self: flex-end;
+}
+.arena-msg-tyler {
+  align-self: flex-start;
+  max-width: 85%;
+}
+
+.arena-msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.2rem;
+}
+.arena-msg-author {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.arena-msg-author.tyler { color: var(--red-bright); }
+.arena-msg-time {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+.arena-msg-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0.7rem 0.9rem;
+  position: relative;
+}
+.arena-msg-bubble.me-bubble {
+  background: rgba(0,191,165,0.08);
+  border-color: rgba(0,191,165,0.2);
+}
+.arena-msg-bubble.tyler-bubble {
+  background: rgba(0,191,165,0.05);
+  border-color: rgba(0,191,165,0.18);
+  border-left: 2px solid var(--red-bright);
+}
+.arena-msg-text {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.65;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.arena-msg-text.tyler-text {
+  font-style: italic;
+  color: var(--text-dim);
+}
+.arena-msg-img {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  margin-top: 0.4rem;
+  border: 1px solid var(--border);
+  filter: saturate(0.85);
+}
+
+.arena-vote-btn {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  transition: color 0.15s;
+}
+.arena-vote-btn:hover { color: var(--red-bright); }
+.arena-vote-btn.voted { color: var(--red-bright); cursor: default; }
+.arena-vote-btn:disabled { cursor: default; }
+
+/* ── Sticky input bar ────────────────────────────────────────────── */
+.arena-input-bar {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: rgba(5,14,12,0.99);
+  padding: 0.6rem clamp(0.7rem, 2vw, 1.2rem);
+  backdrop-filter: blur(8px);
+}
+.arena-img-preview-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px dashed var(--border);
+}
+.arena-img-thumb {
+  height: 48px;
+  width: auto;
+  max-width: 80px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  filter: saturate(0.8);
+}
+.arena-img-remove {
+  background: transparent;
+  border: 1px solid rgba(212,37,107,0.3);
+  color: var(--magenta);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.2s;
+  min-height: 28px;
+  min-width: 28px;
+}
+.arena-img-remove:hover { background: rgba(212,37,107,0.1); }
+
+.arena-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.arena-attach-label {
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.45rem;
+  color: var(--text-dim);
+  transition: color 0.2s;
+  flex-shrink: 0;
+  line-height: 1;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+.arena-attach-label:hover { color: var(--text-bright); }
+
+.arena-text-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 0.6rem 0.8rem;
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+  min-height: 40px;
+  max-height: 120px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.arena-text-input:focus { border-color: var(--red-bright); }
+.arena-text-input::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+.arena-send-btn {
+  flex-shrink: 0;
+  background: var(--red-dim);
+  border: 1px solid var(--red-bright);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  width: 42px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.arena-send-btn:hover:not(.disabled) { background: var(--red); }
+.arena-send-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.arena-input-hint {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 0.4rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* ── Mobile responsive ───────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .arena-rooms-grid { grid-template-columns: 1fr; }
+  .arena-msg { max-width: 88%; }
+  .arena-msg-tyler { max-width: 94%; }
+}
+
+@media (max-width: 479px) {
+  .arena-chat-header { padding: 0.6rem 0.7rem; gap: 0.5rem; min-height: 50px; }
+  .arena-back-btn { font-size: 0.56rem; padding: 0.3rem 0.55rem; }
+  .arena-chat-topic { font-size: 0.72rem; }
+  .arena-chat-cat { font-size: 0.5rem; }
+  .arena-messages { padding: 0.7rem; gap: 0.4rem; }
+  .arena-msg { max-width: 92%; }
+  .arena-msg-text { font-size: 0.76rem; }
+  .arena-input-bar { padding: 0.5rem 0.6rem; }
+  .arena-text-input { font-size: 0.78rem; padding: 0.5rem 0.65rem; }
+  .arena-send-btn { width: 38px; height: 38px; font-size: 0.72rem; }
+  .arena-room-card { padding: 1rem; }
+  .arena-room-topic { font-size: 0.88rem; }
+  .arena-intro-bar { padding: 0.7rem 0.9rem; }
+  .arena-intro-text { font-size: 0.68rem; }
+  .arena-input-hint { display: none; }
+}
+
