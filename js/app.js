@@ -4312,7 +4312,8 @@ function MainApp(_ref21) {
     }
   }, "\u23FB Sign Out")))), tab === 'missions' && /*#__PURE__*/React.createElement(MissionBoard, {
     xp: xp,
-    setXp: setXp
+    setXp: setXp,
+    user: user
   }), tab === 'arena' && /*#__PURE__*/React.createElement(DebateArena, {
     xp: xp,
     setXp: setXp,
@@ -4349,9 +4350,9 @@ function App() {
     var f = window._firebase;
     if (f) f.auth.signOut().catch(function () {});
     clearSession();
-    setUser(null);
     setUnlocked(false);
     setInitialMode('welcome');
+    setUser(null);
   };
   if (!user) return /*#__PURE__*/React.createElement(AuthScreen, {
     onAuth: handleAuth,
