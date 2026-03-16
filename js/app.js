@@ -3559,7 +3559,7 @@ function MissionBoard(_ref12) {
       className: "tyler-response-label"
     }, "\u25B6 TYLER DURDEN"), /*#__PURE__*/React.createElement("div", {
       className: "tyler-response-text"
-    }, stripTylerBrackets(st.tylerMsg)));
+    }, stripTylerBrackets(st.tylerMsg))));
   })));
 }
 
