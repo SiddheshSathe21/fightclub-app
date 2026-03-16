@@ -1049,6 +1049,19 @@ function timeAgo(ts) {
   if (diff < 86400000) return "".concat(Math.floor(diff / 3600000), "h ago");
   return "".concat(Math.floor(diff / 86400000), "d ago");
 }
+// Strip {stage directions} and (parenthetical actions) from Tyler AI responses
+function stripTylerBrackets(text) {
+  if (!text) return text;
+  return text
+    .replace(/\{[^}]*\}/g, '')   // remove {anything}
+    .replace(/\([^)]{0,60}\)/g, function(m) {
+      // only remove short parentheticals that look like stage directions
+      // keep ones that look like real content (numbers, URLs, etc.)
+      return /^[\(\s]*[A-Za-z\s,\-]+[\)\s]*$/.test(m) ? '' : m;
+    })
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
 function callTyler(_x) {
   return _callTyler.apply(this, arguments);
 } // ==================== VISION API (photo + text) ====================
@@ -3546,7 +3559,7 @@ function MissionBoard(_ref12) {
       className: "tyler-response-label"
     }, "\u25B6 TYLER DURDEN"), /*#__PURE__*/React.createElement("div", {
       className: "tyler-response-text"
-    }, st.tylerMsg)));
+    }, stripTylerBrackets(st.tylerMsg)));
   })));
 }
 
@@ -3626,9 +3639,6 @@ function DebateArena(_ref17) {
   var _gtState  = useState(false);
   var generatingTopics = _gtState[0], setGeneratingTopics = _gtState[1];
 
-  var _ttState  = useState(false);
-  var tylerTyping = _ttState[0], setTylerTyping = _ttState[1];
-
   var _cfState  = useState('all');
   var catFilter = _cfState[0], setCatFilter = _cfState[1];
 
@@ -3652,7 +3662,6 @@ function DebateArena(_ref17) {
 
   var messagesEndRef = useRef(null);
   var unsubRef       = useRef(null);
-  var tylerTimerRef  = useRef(null);
   var inputRef       = useRef(null);
 
   // ── Load rooms on mount ───────────────────────────────────────────
@@ -3679,13 +3688,12 @@ function DebateArena(_ref17) {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, tylerTyping]);
+  }, [messages]);
 
   // ── Cleanup on unmount ────────────────────────────────────────────
   useEffect(function() {
     return function() {
       if (unsubRef.current) unsubRef.current();
-      if (tylerTimerRef.current) clearTimeout(tylerTimerRef.current);
     };
   }, []);
 
@@ -3861,54 +3869,12 @@ function DebateArena(_ref17) {
           lastActivity: Date.now()
         }).catch(function(){});
         setXp(function(x) { return x + 15; });
-        var capturedText  = msgText.trim();
-        var capturedImage = msgImage;
         setMsgText('');
         setMsgImage(null);
         setSending(false);
         if (inputRef.current) inputRef.current.focus();
-        maybetylerRespond(capturedText, capturedImage);
       })
       .catch(function() { setSending(false); });
-  }
-
-  // ── Tyler responds occasionally ───────────────────────────────────
-  function maybetylerRespond(userText, userImage) {
-    if (tylerTimerRef.current) clearTimeout(tylerTimerRef.current);
-    // Check last message wasn't Tyler
-    var lastIsTyler = messages.length > 0 && messages[messages.length - 1].isTyler;
-    if (lastIsTyler) return;
-    // Respond ~40% of the time, or every 4th message
-    var shouldRespond = (messages.length % 4 === 3) || (Math.random() < 0.38);
-    if (!shouldRespond) return;
-    setTylerTyping(true);
-    tylerTimerRef.current = setTimeout(function() {
-      var prompt =
-        'Live debate room topic: "' + (activeRoom ? activeRoom.topic : '') + '". ' +
-        'Community member "' + (user ? user.username : 'someone') + '" just said: "' + userText + '". ' +
-        (userImage ? 'They also shared an image as evidence. ' : '') +
-        'As Tyler Durden, cut into the conversation with a raw, sharp, confrontational interjection. ' +
-        'React to what they said. Challenge it or amplify it. No diplomacy. Under 70 words.';
-      var call = userImage
-        ? callTylerWithPhoto(prompt, userImage.base64, userImage.mime)
-        : callTyler(prompt);
-      call.then(function(reply) {
-        var f = getFirebase();
-        if (!f || !activeRoom) { setTylerTyping(false); return; }
-        f.db.collection('arena_rooms').doc(activeRoom.id)
-          .collection('messages').add({
-            author: 'TYLER_DURDEN',
-            uid: 'tyler',
-            text: reply,
-            ts: Date.now() + 100,
-            votes: 0,
-            votedBy: [],
-            isTyler: true
-          })
-          .then(function() { setTylerTyping(false); })
-          .catch(function() { setTylerTyping(false); });
-      }).catch(function() { setTylerTyping(false); });
-    }, 1200 + Math.random() * 2000);
   }
 
   // ── Upvote a message ──────────────────────────────────────────────
@@ -4103,27 +4069,22 @@ function DebateArena(_ref17) {
         ),
 
       messages.map(function(msg) {
-        var isMe     = user && msg.uid === user.uid;
-        var isTyler  = msg.isTyler;
-        var voted    = user && (msg.votedBy || []).includes(user.uid);
+        var isMe  = user && msg.uid === user.uid;
+        var voted = user && (msg.votedBy || []).includes(user.uid);
 
         return React.createElement('div', {
           key: msg.id,
-          className: 'arena-msg' +
-            (isMe    ? ' arena-msg-me'    : '') +
-            (isTyler ? ' arena-msg-tyler' : '')
+          className: 'arena-msg' + (isMe ? ' arena-msg-me' : '')
         },
-          // Avatar / name row
           React.createElement('div', { className: 'arena-msg-meta' },
-            React.createElement('span', { className: 'arena-msg-author' + (isTyler ? ' tyler' : '') },
-              isTyler ? '⚡ TYLER DURDEN' : (isMe ? 'YOU' : '◈ ' + msg.author)
+            React.createElement('span', { className: 'arena-msg-author' },
+              isMe ? 'YOU' : '◈ ' + msg.author
             ),
             React.createElement('span', { className: 'arena-msg-time' }, timeAgo(msg.ts))
           ),
 
-          // Bubble
-          React.createElement('div', { className: 'arena-msg-bubble' + (isTyler ? ' tyler-bubble' : '') + (isMe ? ' me-bubble' : '') },
-            msg.text && React.createElement('p', { className: 'arena-msg-text' + (isTyler ? ' tyler-text' : '') }, msg.text),
+          React.createElement('div', { className: 'arena-msg-bubble' + (isMe ? ' me-bubble' : '') },
+            msg.text && React.createElement('p', { className: 'arena-msg-text' }, msg.text),
             msg.image && React.createElement('img', {
               src: msg.image,
               className: 'arena-msg-img',
@@ -4131,28 +4092,13 @@ function DebateArena(_ref17) {
             })
           ),
 
-          // Upvote
-          !isTyler && React.createElement('button', {
+          React.createElement('button', {
             className: 'arena-vote-btn' + (voted ? ' voted' : ''),
             onClick: function() { voteMessage(msg.id, msg.votedBy); },
             disabled: voted || isMe
           }, '▲ ' + (msg.votes || 0))
         );
       }),
-
-      // Tyler typing indicator
-      tylerTyping && React.createElement('div', { className: 'arena-msg arena-msg-tyler' },
-        React.createElement('div', { className: 'arena-msg-meta' },
-          React.createElement('span', { className: 'arena-msg-author tyler' }, '⚡ TYLER DURDEN')
-        ),
-        React.createElement('div', { className: 'arena-msg-bubble tyler-bubble' },
-          React.createElement('div', { className: 'tyler-thinking' },
-            React.createElement('span', { className: 'dot-pulse' }, '●'),
-            React.createElement('span', { className: 'dot-pulse' }, '●'),
-            React.createElement('span', { className: 'dot-pulse' }, '●')
-          )
-        )
-      ),
 
       React.createElement('div', { ref: messagesEndRef })
     ),
@@ -4211,180 +4157,240 @@ function DebateArena(_ref17) {
 
 // ==================== CONFESSION WALL ====================
 
-function ConfessionWall() {
-  var _useState81 = useState(SEED_CONFESSIONS),
-    _useState82 = _slicedToArray(_useState81, 2),
-    confessions = _useState82[0],
-    setConfessions = _useState82[1];
-  var _useState83 = useState(''),
-    _useState84 = _slicedToArray(_useState83, 2),
-    text = _useState84[0],
-    setText = _useState84[1];
-  var _useState85 = useState('trending'),
-    _useState86 = _slicedToArray(_useState85, 2),
-    view = _useState86[0],
-    setView = _useState86[1];
-  var _useState87 = useState(null),
-    _useState88 = _slicedToArray(_useState87, 2),
-    glitchId = _useState88[0],
-    setGlitchId = _useState88[1];
-  useEffect(function () {
-    var t = setInterval(function () {
-      var ids = confessions.map(function (c) {
-        return c.id;
+function ConfessionWall(_ref24) {
+  var user = _ref24.user;
+
+  var _cState  = useState([]);
+  var confessions = _cState[0], setConfessions = _cState[1];
+
+  var _tState  = useState('');
+  var text = _tState[0], setText = _tState[1];
+
+  var _vState  = useState('recent');
+  var view = _vState[0], setView = _vState[1];
+
+  var _lState  = useState(true);
+  var loading = _lState[0], setLoading = _lState[1];
+
+  var _pState  = useState(false);
+  var posting = _pState[0], setPosting = _pState[1];
+
+  var _gState  = useState(null);
+  var glitchId = _gState[0], setGlitchId = _gState[1];
+
+  // Device fingerprint for anonymous reaction tracking (no account needed)
+  var anonId = useRef((function() {
+    try {
+      var k = 'fc_anon_id';
+      var v = localStorage.getItem(k);
+      if (!v) { v = 'anon_' + Math.random().toString(36).substr(2, 12); localStorage.setItem(k, v); }
+      return v;
+    } catch(_e) { return 'anon_' + Math.random().toString(36).substr(2, 12); }
+  })());
+
+  // ── Real-time Firestore listener ──────────────────────────────────
+  useEffect(function() {
+    var f = getFirebase();
+    if (!f) {
+      // Fallback to seed data if Firebase not configured
+      setConfessions(SEED_CONFESSIONS);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    var unsub = f.db.collection('confessions')
+      .orderBy('ts', 'desc')
+      .limit(100)
+      .onSnapshot(function(snap) {
+        var docs = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+        setConfessions(docs);
+        setLoading(false);
+      }, function(err) {
+        console.warn('confessions snapshot error:', err);
+        setConfessions(SEED_CONFESSIONS);
+        setLoading(false);
       });
+    return function() { unsub(); };
+  }, []);
+
+  // ── Glitch effect ─────────────────────────────────────────────────
+  useEffect(function() {
+    if (confessions.length === 0) return;
+    var t = setInterval(function() {
+      var ids = confessions.map(function(c) { return c.id; });
       setGlitchId(ids[Math.floor(Math.random() * ids.length)]);
-      setTimeout(function () {
-        return setGlitchId(null);
-      }, 400);
+      setTimeout(function() { setGlitchId(null); }, 400);
     }, 4000);
-    return function () {
-      return clearInterval(t);
-    };
+    return function() { clearInterval(t); };
   }, [confessions]);
-  var submit = function submit(e) {
+
+  // ── Post confession to Firestore ──────────────────────────────────
+  function submit(e) {
     e.preventDefault();
-    if (!text.trim()) return;
-    var newConf = {
-      id: Date.now(),
+    if (!text.trim() || posting) return;
+    var f = getFirebase();
+    if (!f) {
+      // Fallback: local only
+      setConfessions(function(prev) {
+        return [{ id: Date.now(), text: text.trim(), ts: Date.now(),
+          reactions: { Relatable: 0, 'Wake up': 0, 'Stay strong': 0, 'I see you': 0 },
+          reactedBy: {} }].concat(prev);
+      });
+      setText('');
+      return;
+    }
+    setPosting(true);
+    f.db.collection('confessions').add({
       text: text.trim(),
       ts: Date.now(),
-      reactions: {
-        Relatable: 0,
-        'Wake up': 0,
-        'Stay strong': 0,
-        'I see you': 0
-      },
-      userReacted: null
-    };
-    setConfessions(function (prev) {
-      return [newConf].concat(_toConsumableArray(prev));
-    });
-    setText('');
-  };
-  var react = function react(confId, reaction) {
-    setConfessions(function (prev) {
-      return prev.map(function (c) {
-        if (c.id !== confId || c.userReacted) return c;
-        return _objectSpread(_objectSpread({}, c), {}, {
-          reactions: _objectSpread(_objectSpread({}, c.reactions), {}, _defineProperty({}, reaction, (c.reactions[reaction] || 0) + 1)),
-          userReacted: reaction
+      reactions: { Relatable: 0, 'Wake up': 0, 'Stay strong': 0, 'I see you': 0 },
+      reactedBy: {}
+    }).then(function() {
+      setText('');
+      setPosting(false);
+    }).catch(function() { setPosting(false); });
+  }
+
+  // ── React to a confession ─────────────────────────────────────────
+  function react(confId, reaction) {
+    var conf = confessions.find(function(c) { return c.id === confId; });
+    if (!conf) return;
+    var reactedBy = conf.reactedBy || {};
+    if (reactedBy[anonId.current]) return; // already reacted
+    var f = getFirebase();
+    if (!f) {
+      // Fallback: local only
+      setConfessions(function(prev) {
+        return prev.map(function(c) {
+          if (c.id !== confId) return c;
+          var rb = Object.assign({}, c.reactedBy || {});
+          rb[anonId.current] = reaction;
+          var rx = Object.assign({}, c.reactions);
+          rx[reaction] = (rx[reaction] || 0) + 1;
+          return Object.assign({}, c, { reactions: rx, reactedBy: rb });
         });
       });
-    });
-  };
-  var totalReactions = function totalReactions(c) {
-    return Object.values(c.reactions).reduce(function (a, b) {
-      return a + b;
-    }, 0);
-  };
-  var sorted = view === 'trending' ? _toConsumableArray(confessions).sort(function (a, b) {
-    return totalReactions(b) - totalReactions(a);
-  }) : _toConsumableArray(confessions).sort(function (a, b) {
-    return b.ts - a.ts;
-  });
-  var top3 = sorted.slice(0, 3).map(function (c) {
-    return c.id;
-  });
-  return /*#__PURE__*/React.createElement("div", {
-    className: "section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "section-header"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "section-eyebrow"
-  }, "Anonymous Truth"), /*#__PURE__*/React.createElement("h2", {
-    className: "section-title"
-  }, "CONFESSION", /*#__PURE__*/React.createElement("br", null), "WALL")), /*#__PURE__*/React.createElement("div", {
-    className: "char-guides-row compact"
-  }, /*#__PURE__*/React.createElement(CharacterGuide, {
-    character: "narrator",
-    quote: "I wanted to say everything I had never been allowed to say. This is that place.",
-    align: "left",
-    context: "anonymous confessions and honest thoughts about society"
-  }), /*#__PURE__*/React.createElement(CharacterGuide, {
-    character: "tyler",
-    quote: "Your silence is consent. Every truth you swallowed made you smaller.",
-    align: "right",
-    context: "breaking silence and speaking uncomfortable truths"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "confess-form"
-  }, /*#__PURE__*/React.createElement("form", {
-    onSubmit: submit
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "confess-label"
-  }, "\u25C8 DROP YOUR TRUTH \u2014 NO IDENTITY REQUIRED"), /*#__PURE__*/React.createElement("textarea", {
-    className: "confess-textarea",
-    placeholder: "What do you actually think? What keeps you up? What have you never said out loud? Say it here. No one knows who you are.",
-    value: text,
-    onChange: function onChange(e) {
-      return setText(e.target.value);
-    },
-    maxLength: 600
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "confess-note"
-  }, "\u25C8 Anonymous \xA0\xB7\xA0 No account \xA0\xB7\xA0 No tracking \xA0\xB7\xA0 ", text.length, "/600 characters"), /*#__PURE__*/React.createElement("button", {
-    className: "btn-primary",
-    type: "submit",
-    disabled: !text.trim()
-  }, "POST CONFESSION"))), /*#__PURE__*/React.createElement("div", {
-    className: "wall-controls"
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: '0.65rem',
-      color: 'var(--text-dim)',
-      letterSpacing: '0.3em',
-      textTransform: 'uppercase',
-      marginRight: '0.5rem'
+      return;
     }
-  }, "VIEW:"), /*#__PURE__*/React.createElement("button", {
-    className: "wall-toggle-btn ".concat(view === 'trending' ? 'active' : ''),
-    onClick: function onClick() {
-      return setView('trending');
-    }
-  }, "TRENDING"), /*#__PURE__*/React.createElement("button", {
-    className: "wall-toggle-btn ".concat(view === 'recent' ? 'active' : ''),
-    onClick: function onClick() {
-      return setView('recent');
-    }
-  }, "RECENT"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      marginLeft: 'auto',
-      fontSize: '0.65rem',
-      color: 'var(--text-dim)',
-      letterSpacing: '0.2em'
-    }
-  }, confessions.length, " CONFESSIONS")), /*#__PURE__*/React.createElement("div", {
-    className: "confessions-grid"
-  }, sorted.map(function (c, i) {
-    var trending = top3.includes(c.id);
-    var isGlitch = glitchId === c.id;
-    return /*#__PURE__*/React.createElement("div", {
-      key: c.id,
-      className: "confession-card ".concat(trending ? 'trending' : '', " ").concat(isGlitch ? 'glitch-card' : ''),
-      style: {
-        animationDelay: "".concat(i * 0.05, "s")
-      }
-    }, trending && /*#__PURE__*/React.createElement("div", {
-      className: "conf-trending-badge"
-    }, "TRENDING"), /*#__PURE__*/React.createElement("div", {
-      className: "conf-text"
-    }, c.text), /*#__PURE__*/React.createElement("div", {
-      className: "conf-meta"
-    }, timeAgo(c.ts), " \xA0\xB7\xA0 ", totalReactions(c), " reactions"), /*#__PURE__*/React.createElement("div", {
-      className: "conf-reactions"
-    }, REACTIONS.map(function (r) {
-      return /*#__PURE__*/React.createElement("button", {
-        key: r,
-        className: "react-btn ".concat(c.userReacted === r ? 'reacted' : ''),
-        onClick: function onClick() {
-          return react(c.id, r);
+    var update = { reactedBy: {} };
+    update['reactedBy.' + anonId.current] = reaction;
+    update['reactions.' + reaction] = firebase.firestore.FieldValue.increment(1);
+    f.db.collection('confessions').doc(confId).update(update).catch(function(){});
+  }
+
+  function totalReactions(c) {
+    return Object.values(c.reactions || {}).reduce(function(a, b) { return a + b; }, 0);
+  }
+  function myReaction(c) {
+    return (c.reactedBy || {})[anonId.current] || null;
+  }
+
+  var sorted = view === 'trending'
+    ? _toConsumableArray(confessions).sort(function(a, b) { return totalReactions(b) - totalReactions(a); })
+    : _toConsumableArray(confessions).sort(function(a, b) { return b.ts - a.ts; });
+  var top3 = sorted.slice(0, 3).map(function(c) { return c.id; });
+
+  return React.createElement('div', { className: 'section' },
+
+    React.createElement('div', { className: 'section-header' },
+      React.createElement('div', { className: 'section-eyebrow' }, 'Anonymous Truth'),
+      React.createElement('h2', { className: 'section-title' },
+        'CONFESSION', React.createElement('br', null), 'WALL'
+      )
+    ),
+
+    React.createElement('div', { className: 'char-guides-row compact' },
+      React.createElement(CharacterGuide, {
+        character: 'narrator',
+        quote: 'I wanted to say everything I had never been allowed to say. This is that place.',
+        align: 'left',
+        context: 'anonymous confessions and honest thoughts about society'
+      }),
+      React.createElement(CharacterGuide, {
+        character: 'tyler',
+        quote: 'Your silence is consent. Every truth you swallowed made you smaller.',
+        align: 'right',
+        context: 'breaking silence and speaking uncomfortable truths'
+      })
+    ),
+
+    // Post form
+    React.createElement('div', { className: 'confess-form' },
+      React.createElement('form', { onSubmit: submit },
+        React.createElement('label', { className: 'confess-label' }, '◈ DROP YOUR TRUTH — NO IDENTITY REQUIRED'),
+        React.createElement('textarea', {
+          className: 'confess-textarea',
+          placeholder: 'What do you actually think? What keeps you up? What have you never said out loud? Say it here. No one knows who you are.',
+          value: text,
+          onChange: function(e) { setText(e.target.value); },
+          maxLength: 600
+        }),
+        React.createElement('div', { className: 'confess-note' },
+          '◈ Anonymous · Shared with everyone · ', text.length, '/600 characters'
+        ),
+        React.createElement('button', {
+          className: 'btn-primary',
+          type: 'submit',
+          disabled: !text.trim() || posting
+        }, posting ? 'POSTING...' : 'POST CONFESSION')
+      )
+    ),
+
+    // Controls
+    React.createElement('div', { className: 'wall-controls' },
+      React.createElement('span', { style: { fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '0.3em', textTransform: 'uppercase', marginRight: '0.5rem' } }, 'VIEW:'),
+      React.createElement('button', {
+        className: 'wall-toggle-btn ' + (view === 'trending' ? 'active' : ''),
+        onClick: function() { setView('trending'); }
+      }, 'TRENDING'),
+      React.createElement('button', {
+        className: 'wall-toggle-btn ' + (view === 'recent' ? 'active' : ''),
+        onClick: function() { setView('recent'); }
+      }, 'RECENT'),
+      React.createElement('span', { style: { marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '0.2em' } },
+        confessions.length + ' CONFESSIONS'
+      )
+    ),
+
+    // Loading
+    loading && React.createElement('div', { className: 'empty-state' },
+      React.createElement('span', { className: 'big' }, '◈'),
+      'Loading confessions...'
+    ),
+
+    // Grid
+    !loading && React.createElement('div', { className: 'confessions-grid' },
+      sorted.map(function(c, i) {
+        var trending = top3.includes(c.id);
+        var isGlitch = glitchId === c.id;
+        var myRx = myReaction(c);
+        return React.createElement('div', {
+          key: c.id,
+          className: 'confession-card ' + (trending ? 'trending' : '') + ' ' + (isGlitch ? 'glitch-card' : ''),
+          style: { animationDelay: (i * 0.05) + 's' }
         },
-        disabled: !!c.userReacted
-      }, r, " ", c.reactions[r] > 0 && /*#__PURE__*/React.createElement("span", {
-        className: "react-count"
-      }, c.reactions[r]));
-    })));
-  })));
+          trending && React.createElement('div', { className: 'conf-trending-badge' }, 'TRENDING'),
+          React.createElement('div', { className: 'conf-text' }, c.text),
+          React.createElement('div', { className: 'conf-meta' },
+            timeAgo(c.ts), ' · ', totalReactions(c), ' reactions'
+          ),
+          React.createElement('div', { className: 'conf-reactions' },
+            REACTIONS.map(function(r) {
+              return React.createElement('button', {
+                key: r,
+                className: 'react-btn ' + (myRx === r ? 'reacted' : ''),
+                onClick: function() { react(c.id, r); },
+                disabled: !!myRx
+              },
+                r,
+                (c.reactions[r] || 0) > 0 && React.createElement('span', { className: 'react-count' }, ' ' + c.reactions[r])
+              );
+            })
+          )
+        );
+      })
+    )
+  );
 }
 
 // ==================== MAIN APP ====================
@@ -4529,7 +4535,7 @@ function MainApp(_ref21) {
     xp: xp,
     setXp: setXp,
     user: user
-  }), tab === 'wall' && /*#__PURE__*/React.createElement(ConfessionWall, null));
+  }), tab === 'wall' && /*#__PURE__*/React.createElement(ConfessionWall, { user: user }));
 }
 
 // ==================== ROOT ====================
