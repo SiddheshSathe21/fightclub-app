@@ -3797,7 +3797,6 @@ function DebateArena(_ref17) {
   // ── Enter a chat room ─────────────────────────────────────────────
   function enterRoom(room) {
     if (unsubRef.current) unsubRef.current();
-    if (tylerTimerRef.current) clearTimeout(tylerTimerRef.current);
     setActiveRoom(room);
     setMessages([]);
     setView('chat');
@@ -3823,7 +3822,6 @@ function DebateArena(_ref17) {
   // ── Leave room ────────────────────────────────────────────────────
   function leaveRoom() {
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
-    if (tylerTimerRef.current) { clearTimeout(tylerTimerRef.current); }
     if (activeRoom) {
       var f = getFirebase();
       if (f) {
@@ -3837,7 +3835,6 @@ function DebateArena(_ref17) {
     setMessages([]);
     setMsgText('');
     setMsgImage(null);
-    setTylerTyping(false);
     loadRooms();
   }
 
@@ -4061,7 +4058,7 @@ function DebateArena(_ref17) {
 
     // Message feed
     React.createElement('div', { className: 'arena-messages' },
-      messages.length === 0 && !tylerTyping &&
+      messages.length === 0 &&
         React.createElement('div', { className: 'arena-empty-chat' },
           React.createElement('div', { className: 'arena-empty-icon' }, '◈'),
           React.createElement('div', null, 'No messages yet.'),
