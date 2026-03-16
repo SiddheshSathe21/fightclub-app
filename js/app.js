@@ -2109,279 +2109,70 @@ function AuthScreen(_ref2) {
 }
 function EntryGate(_ref9) {
   var onUnlock = _ref9.onUnlock,
-    user = _ref9.user,
-    onBackToAuth = _ref9.onBackToAuth;
-  var BOOT_LINES = [{
-    text: '> SYSTEM INITIALIZING...',
-    delay: 0,
-    type: 'dim'
-  }, {
-    text: '> LOADING ENCRYPTED CHANNEL...',
-    delay: 700,
-    type: 'dim'
-  }, {
-    text: '> AUTHENTICATING SESSION...',
-    delay: 1400,
-    type: 'dim'
-  }, {
-    text: '> CONNECTION ESTABLISHED',
-    delay: 2100,
-    type: ''
-  }, {
-    text: '',
-    delay: 2600,
-    type: 'dim'
-  }, {
-    text: 'THE FIRST RULE OF FIGHT CLUB IS:',
-    delay: 3000,
-    type: 'red'
-  }, {
-    text: 'YOU DO NOT TALK ABOUT FIGHT CLUB.',
-    delay: 3800,
-    type: 'white'
-  }, {
-    text: '',
-    delay: 4400,
-    type: 'dim'
-  }, {
-    text: 'THE SECOND RULE OF FIGHT CLUB IS:',
-    delay: 4600,
-    type: 'red'
-  }, {
-    text: 'YOU DO NOT TALK ABOUT FIGHT CLUB.',
-    delay: 5400,
-    type: 'white'
-  }, {
-    text: '',
-    delay: 6000,
-    type: 'dim'
-  }, {
-    text: '',
-    delay: 6800,
-    type: ''
-  }];
-  var _useState19 = useState([]),
-    _useState20 = _slicedToArray(_useState19, 2),
-    visibleLines = _useState20[0],
-    setVisibleLines = _useState20[1];
-  var _useState21 = useState('username'),
-    _useState22 = _slicedToArray(_useState21, 2),
-    step = _useState22[0],
-    setStep = _useState22[1]; // username | password
-  var _useState23 = useState(''),
-    _useState24 = _slicedToArray(_useState23, 2),
-    inputUsername = _useState24[0],
-    setInputUsername = _useState24[1];
-  var _useState25 = useState(''),
-    _useState26 = _slicedToArray(_useState25, 2),
-    inputPassword = _useState26[0],
-    setInputPassword = _useState26[1];
-  var _useState27 = useState(''),
-    _useState28 = _slicedToArray(_useState27, 2),
-    typedUsername = _useState28[0],
-    setTypedUsername = _useState28[1];
-  var _useState29 = useState(''),
-    _useState30 = _slicedToArray(_useState29, 2),
-    error = _useState30[0],
-    setError = _useState30[1];
-  var _useState31 = useState(false),
-    _useState32 = _slicedToArray(_useState31, 2),
-    showInput = _useState32[0],
-    setShowInput = _useState32[1];
-  var inputRef = useRef(null);
-  useEffect(function () {
-    var timers = BOOT_LINES.map(function (line, i) {
-      return setTimeout(function () {
-        setVisibleLines(function (v) {
-          return [].concat(_toConsumableArray(v), [line]);
-        });
-        if (i === BOOT_LINES.length - 1) setTimeout(function () {
-          return setShowInput(true);
-        }, 500);
+    user = _ref9.user;
+
+  var BOOT_LINES = [
+    { text: '> SYSTEM INITIALIZING...',         delay: 0,    type: 'dim' },
+    { text: '> LOADING ENCRYPTED CHANNEL...',   delay: 700,  type: 'dim' },
+    { text: '> AUTHENTICATING SESSION...',      delay: 1400, type: 'dim' },
+    { text: '> CONNECTION ESTABLISHED',         delay: 2100, type: '' },
+    { text: '',                                 delay: 2600, type: 'dim' },
+    { text: 'THE FIRST RULE OF FIGHT CLUB IS:', delay: 3000, type: 'red' },
+    { text: 'YOU DO NOT TALK ABOUT FIGHT CLUB.',delay: 3800, type: 'white' },
+    { text: '',                                 delay: 4400, type: 'dim' },
+    { text: 'THE SECOND RULE OF FIGHT CLUB IS:',delay: 4600, type: 'red' },
+    { text: 'YOU DO NOT TALK ABOUT FIGHT CLUB.',delay: 5400, type: 'white' },
+    { text: '',                                 delay: 6000, type: 'dim' },
+    { text: '> IDENTITY VERIFIED: ' + (user ? user.username.toUpperCase() : 'MEMBER'), delay: 6400, type: '' },
+    { text: '',                                 delay: 7000, type: 'dim' },
+    { text: 'WELCOME TO FIGHT CLUB.',           delay: 7400, type: 'red' },
+  ];
+
+  var _vl = useState([]);
+  var visibleLines = _vl[0], setVisibleLines = _vl[1];
+
+  var _done = useState(false);
+  var done = _done[0], setDone = _done[1];
+
+  useEffect(function() {
+    var timers = BOOT_LINES.map(function(line, i) {
+      return setTimeout(function() {
+        setVisibleLines(function(v) { return v.concat([line]); });
+        if (i === BOOT_LINES.length - 1) {
+          setTimeout(function() { setDone(true); }, 900);
+        }
       }, line.delay);
     });
-    return function () {
-      return timers.forEach(clearTimeout);
-    };
+    return function() { timers.forEach(clearTimeout); };
   }, []);
-  useEffect(function () {
-    if (showInput && inputRef.current) inputRef.current.focus();
-  }, [showInput, step]);
-  var handleUsernameSubmit = useCallback(function () {
-    var val = inputUsername.trim();
-    if (!val) return;
-    // Verify username matches logged-in user
-    if (val.toLowerCase() !== user.username.toLowerCase()) {
-      setError('> USERNAME NOT FOUND. Try again.');
-      setInputUsername('');
-      setTimeout(function () {
-        return setError('');
-      }, 2500);
-      return;
-    }
-    setTypedUsername(val);
-    setInputUsername('');
-    setStep('password');
-    setError('');
-  }, [inputUsername, user]);
-  var handlePasswordSubmit = useCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-    var val, f, doc, storedHash, _t7, _t8;
-    return _regenerator().w(function (_context7) {
-      while (1) switch (_context7.p = _context7.n) {
-        case 0:
-          val = inputPassword.trim();
-          if (val) {
-            _context7.n = 1;
-            break;
-          }
-          return _context7.a(2);
-        case 1:
-          f = window._firebase;
-          if (!(user.method === 'google')) {
-            _context7.n = 6;
-            break;
-          }
-          if (f) {
-            _context7.n = 2;
-            break;
-          }
-          onUnlock();
-          return _context7.a(2);
-        case 2:
-          _context7.p = 2;
-          _context7.n = 3;
-          return f.db.collection('users').doc(user.uid).get();
-        case 3:
-          doc = _context7.v;
-          storedHash = doc.exists ? doc.data().terminalPasswordHash : null;
-          if (storedHash && simpleHash(val) === storedHash) {
-            onUnlock();
-          } else {
-            setError('> INCORRECT PASSWORD. Try again.');
-            setInputPassword('');
-            setTimeout(function () {
-              return setError('');
-            }, 2500);
-          }
-          _context7.n = 5;
-          break;
-        case 4:
-          _context7.p = 4;
-          _t7 = _context7.v;
-          // Firestore error — allow entry gracefully
-          onUnlock();
-        case 5:
-          return _context7.a(2);
-        case 6:
-          if (f) {
-            _context7.n = 7;
-            break;
-          }
-          onUnlock();
-          return _context7.a(2);
-        case 7:
-          _context7.p = 7;
-          _context7.n = 8;
-          return f.auth.signInWithEmailAndPassword(user.email, val);
-        case 8:
-          onUnlock();
-          _context7.n = 10;
-          break;
-        case 9:
-          _context7.p = 9;
-          _t8 = _context7.v;
-          setError('> INCORRECT PASSWORD. Try again.');
-          setInputPassword('');
-          setTimeout(function () {
-            return setError('');
-          }, 2500);
-        case 10:
-          return _context7.a(2);
-      }
-    }, _callee7, null, [[7, 9], [2, 4]]);
-  })), [inputPassword, user, onUnlock]);
-  var handleKeyDown = useCallback(function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (step === 'username') handleUsernameSubmit();else handlePasswordSubmit();
-    }
-  }, [step, handleUsernameSubmit, handlePasswordSubmit]);
-  return /*#__PURE__*/React.createElement("div", {
-    className: "entry-gate"
-  }, /*#__PURE__*/React.createElement(NoiseCanvas, null), /*#__PURE__*/React.createElement("div", {
-    className: "scanline-overlay"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "entry-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "terminal-block"
-  }, visibleLines.map(function (line, i) {
-    return /*#__PURE__*/React.createElement("span", {
-      key: i,
-      className: "term-line ".concat(line.type)
-    }, line.text);
-  }), !showInput && /*#__PURE__*/React.createElement("span", {
-    className: "term-cursor"
-  }), showInput && /*#__PURE__*/React.createElement("div", null, step === 'password' && /*#__PURE__*/React.createElement("span", {
-    className: "term-line",
-    style: {
-      color: 'var(--green-dim)'
-    }
-  }, "> USERNAME: ", typedUsername), /*#__PURE__*/React.createElement("div", {
-    className: "entry-input-wrap"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "entry-input-row"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "entry-prompt"
-  }, step === 'username' ? 'USERNAME:' : 'PASSWORD:'), step === 'username' ? /*#__PURE__*/React.createElement("input", {
-    ref: inputRef,
-    className: "entry-input",
-    value: inputUsername,
-    onChange: function onChange(e) {
-      return setInputUsername(e.target.value);
-    },
-    onKeyDown: handleKeyDown,
-    placeholder: "enter your username...",
-    spellCheck: false,
-    autoComplete: "off",
-    autoCapitalize: "off"
-  }) : /*#__PURE__*/React.createElement("input", {
-    ref: inputRef,
-    className: "entry-input",
-    type: "password",
-    value: inputPassword,
-    onChange: function onChange(e) {
-      return setInputPassword(e.target.value);
-    },
-    onKeyDown: handleKeyDown,
-    placeholder: "enter your password...",
-    autoComplete: "off"
-  })), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "entry-enter-btn",
-    onClick: step === 'username' ? handleUsernameSubmit : handlePasswordSubmit
-  }, "ENTER")), error && /*#__PURE__*/React.createElement("div", {
-    className: "entry-error"
-  }, error), !error && /*#__PURE__*/React.createElement("div", {
-    className: "entry-hint"
-  }, step === 'username' ? '> Enter your username to identify yourself.' : user.method === 'google' ? '> Enter the terminal password you set during Google setup.' : '> Enter your account password to proceed.'), step === 'username' && /*#__PURE__*/React.createElement("div", {
-    className: "terminal-auth-links"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "terminal-link",
-    onClick: function onClick() {
-      return onBackToAuth('forgot_username');
-    }
-  }, "> Forgot your username?"), /*#__PURE__*/React.createElement("button", {
-    className: "terminal-link",
-    onClick: function onClick() {
-      return onBackToAuth('forgot_password');
-    }
-  }, "> Forgot your password?"), /*#__PURE__*/React.createElement("button", {
-    className: "terminal-link",
-    onClick: function onClick() {
-      return onBackToAuth('signup');
-    }
-  }, "> Sign up with a different account"))))));
+
+  useEffect(function() {
+    if (done) onUnlock();
+  }, [done]);
+
+  return React.createElement('div', { className: 'entry-gate' },
+    React.createElement(NoiseCanvas, null),
+    React.createElement('div', { className: 'scanline-overlay' }),
+    React.createElement('div', { className: 'entry-content' },
+      React.createElement('div', { className: 'terminal-block' },
+        visibleLines.map(function(line, i) {
+          return React.createElement('span', {
+            key: i,
+            className: 'term-line ' + line.type,
+            style: line.text === 'WELCOME TO FIGHT CLUB.' ? {
+              fontFamily: 'var(--font-head)',
+              fontSize: 'clamp(1.4rem, 5vw, 2rem)',
+              letterSpacing: '0.15em',
+              color: 'var(--red-bright)',
+              marginTop: '0.5rem',
+              display: 'block'
+            } : {}
+          }, line.text);
+        }),
+        !done && React.createElement('span', { className: 'term-cursor' })
+      )
+    )
+  );
 }
 
 // ==================== GLITCH TEXT ====================
@@ -4574,13 +4365,7 @@ function App() {
   });
   if (!unlocked) return /*#__PURE__*/React.createElement(EntryGate, {
     onUnlock: handleUnlock,
-    user: user,
-    onBackToAuth: function onBackToAuth(m) {
-      clearSession();
-      setUser(null);
-      setUnlocked(false);
-      setInitialMode(m);
-    }
+    user: user
   });
   return /*#__PURE__*/React.createElement(MainApp, {
     user: user,
