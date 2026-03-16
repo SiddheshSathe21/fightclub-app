@@ -1407,9 +1407,7 @@ function AuthScreen(_ref2) {
               uid: cred.user.uid,
               username: uname,
               email: cred.user.email,
-              method: 'email',
-              xp: (doc.exists && doc.data().xp) ? Number(doc.data().xp) : 0,
-              completedIds: (doc.exists && doc.data().completedIds) ? doc.data().completedIds : []
+              method: 'email'
             };
             saveSession(user);
             onAuth(user);
@@ -1467,9 +1465,7 @@ function AuthScreen(_ref2) {
                 uid: uid,
                 username: data.username,
                 email: cred.user.email,
-                method: 'google',
-                xp: data.xp ? Number(data.xp) : 0,
-                completedIds: data.completedIds || []
+                method: 'google'
               };
               saveSession(user);
               onAuth(user);
@@ -1558,9 +1554,7 @@ function AuthScreen(_ref2) {
               uid: pendingGoogle.uid,
               username: username.trim(),
               email: pendingGoogle.email,
-              method: 'google',
-              xp: 0,
-              completedIds: []
+              method: 'google'
             };
             saveSession(user);
             setPendingGoogle(null);
@@ -2950,18 +2944,8 @@ function CharacterGuide(_ref10) {
 
 function MissionBoard(_ref12) {
   var xp = _ref12.xp,
-    setXp = _ref12.setXp,
-    user = _ref12.user;
-
-  // Seed already-completed missions from the user's stored completedIds
-  var _useState39 = useState(function() {
-    var initial = {};
-    var ids = (user && user.completedIds) ? user.completedIds : [];
-    ids.forEach(function(id) {
-      initial[id] = { status: 'done', reflection: '', tylerMsg: '', loading: false, fromHistory: true };
-    });
-    return initial;
-  }),
+    setXp = _ref12.setXp;
+  var _useState39 = useState({}),
     _useState40 = _slicedToArray(_useState39, 2),
     challengeState = _useState40[0],
     setChallengeState = _useState40[1];
@@ -3178,23 +3162,6 @@ function MissionBoard(_ref12) {
                           tylerMsg: msg
                         })));
                       });
-                      // Persist completed mission ID to Firestore
-                      (function() {
-                        var _f = getFirebase();
-                        if (_f && user && user.uid) {
-                          _f.db.collection('users').doc(user.uid).update({
-                            completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
-                          }).catch(function(e) { console.warn('completion save failed:', e.message); });
-                          // Keep session in sync too
-                          try {
-                            var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
-                            if (_sess) {
-                              _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
-                              sessionStorage.setItem('fc_session', JSON.stringify(_sess));
-                            }
-                          } catch(_e) {}
-                        }
-                      })();
                       _context0.n = 6;
                       break;
                     case 5:
@@ -3207,22 +3174,6 @@ function MissionBoard(_ref12) {
                           tylerMsg: "Proof received. You showed up. That puts you ahead of everyone who only planned to. Now — do it again tomorrow."
                         })));
                       });
-                      // Persist completed mission ID to Firestore (error fallback path)
-                      (function() {
-                        var _f = getFirebase();
-                        if (_f && user && user.uid) {
-                          _f.db.collection('users').doc(user.uid).update({
-                            completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
-                          }).catch(function(e) { console.warn('completion save failed:', e.message); });
-                          try {
-                            var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
-                            if (_sess) {
-                              _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
-                              sessionStorage.setItem('fc_session', JSON.stringify(_sess));
-                            }
-                          } catch(_e) {}
-                        }
-                      })();
                     case 6:
                       return _context0.a(2);
                   }
@@ -3241,7 +3192,7 @@ function MissionBoard(_ref12) {
     return function (_x5, _x6) {
       return _ref14.apply(this, arguments);
     };
-  }(), [setXp, user]);
+  }(), [setXp]);
   var completeChallenge = /*#__PURE__*/function () {
     var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(ch) {
       var st, allChallenges, nextCh, persona, msg, _t11;
@@ -3283,22 +3234,6 @@ function MissionBoard(_ref12) {
                 tylerMsg: msg
               })));
             });
-            // Persist completed mission ID to Firestore
-            (function() {
-              var _f = getFirebase();
-              if (_f && user && user.uid) {
-                _f.db.collection('users').doc(user.uid).update({
-                  completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
-                }).catch(function(e) { console.warn('completion save failed:', e.message); });
-                try {
-                  var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
-                  if (_sess) {
-                    _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
-                    sessionStorage.setItem('fc_session', JSON.stringify(_sess));
-                  }
-                } catch(_e) {}
-              }
-            })();
             _context10.n = 5;
             break;
           case 4:
@@ -3311,22 +3246,6 @@ function MissionBoard(_ref12) {
                 tylerMsg: "You did it. That is one. The work does not stop here."
               })));
             });
-            // Persist completed mission ID to Firestore (error fallback path)
-            (function() {
-              var _f = getFirebase();
-              if (_f && user && user.uid) {
-                _f.db.collection('users').doc(user.uid).update({
-                  completedIds: firebase.firestore.FieldValue.arrayUnion(ch.id)
-                }).catch(function(e) { console.warn('completion save failed:', e.message); });
-                try {
-                  var _sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
-                  if (_sess) {
-                    _sess.completedIds = (_sess.completedIds || []).concat([ch.id]);
-                    sessionStorage.setItem('fc_session', JSON.stringify(_sess));
-                  }
-                } catch(_e) {}
-              }
-            })();
           case 5:
             return _context10.a(2);
         }
@@ -3631,667 +3550,663 @@ function MissionBoard(_ref12) {
   })));
 }
 
-// ==================== DEBATE ARENA ====================
+// ==================== LIVE ARENA (CHAT ROOMS) ====================
+
+var ARENA_CATS = [
+  { id: 'all',         label: 'All',          icon: '🌐' },
+  { id: 'politics',    label: 'Politics',      icon: '🏛' },
+  { id: 'corruption',  label: 'Corruption',    icon: '⚖' },
+  { id: 'society',     label: 'Society',       icon: '🏙' },
+  { id: 'education',   label: 'Education',     icon: '📚' },
+  { id: 'economy',     label: 'Economy',       icon: '💹' },
+  { id: 'media',       label: 'Media & Tech',  icon: '📡' },
+  { id: 'environment', label: 'Environment',   icon: '🌱' },
+  { id: 'youth',       label: 'Youth',         icon: '🔭' }
+];
+
+var ARENA_TTL = 24 * 3600 * 1000; // 24 hours in ms
+
+function arenaTimeLeft(createdAt) {
+  var ms = (createdAt + ARENA_TTL) - Date.now();
+  if (ms <= 0) return null;
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return h + 'h ' + m + 'm';
+  if (m > 0) return m + 'm ' + s + 's';
+  return s + 's';
+}
+
+function compressImage(file, cb) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var MAX = 800;
+      var ratio = Math.min(MAX / img.width, MAX / img.height, 1);
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+      cb({ preview: dataUrl, base64: dataUrl.split(',')[1], mime: 'image/jpeg' });
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
 function DebateArena(_ref17) {
-  var _DEBATE_CATEGORIES$fi;
-  var xp = _ref17.xp,
-    setXp = _ref17.setXp;
-  var _useState51 = useState(DEBATE_TOPICS),
-    _useState52 = _slicedToArray(_useState51, 2),
-    debates = _useState52[0],
-    setDebates = _useState52[1];
-  var _useState53 = useState(null),
-    _useState54 = _slicedToArray(_useState53, 2),
-    active = _useState54[0],
-    setActive = _useState54[1];
-  var _useState55 = useState(''),
-    _useState56 = _slicedToArray(_useState55, 2),
-    myArg = _useState56[0],
-    setMyArg = _useState56[1];
-  var _useState57 = useState('for'),
-    _useState58 = _slicedToArray(_useState57, 2),
-    mySide = _useState58[0],
-    setMySide = _useState58[1];
-  var _useState59 = useState(false),
-    _useState60 = _slicedToArray(_useState59, 2),
-    posting = _useState60[0],
-    setPosting = _useState60[1];
-  var _useState61 = useState(false),
-    _useState62 = _slicedToArray(_useState61, 2),
-    tylerDebating = _useState62[0],
-    setTylerDebating = _useState62[1];
-  var _useState63 = useState(null),
-    _useState64 = _slicedToArray(_useState63, 2),
-    arenaPhoto = _useState64[0],
-    setArenaPhoto = _useState64[1];
-  // Create debate
-  var _useState65 = useState(false),
-    _useState66 = _slicedToArray(_useState65, 2),
-    showCreate = _useState66[0],
-    setShowCreate = _useState66[1];
-  var _useState67 = useState(''),
-    _useState68 = _slicedToArray(_useState67, 2),
-    newTopic = _useState68[0],
-    setNewTopic = _useState68[1];
-  var _useState69 = useState(''),
-    _useState70 = _slicedToArray(_useState69, 2),
-    newSummary = _useState70[0],
-    setNewSummary = _useState70[1];
-  var _useState71 = useState('society'),
-    _useState72 = _slicedToArray(_useState71, 2),
-    newCategory = _useState72[0],
-    setNewCategory = _useState72[1];
-  var _useState73 = useState(false),
-    _useState74 = _slicedToArray(_useState73, 2),
-    creating = _useState74[0],
-    setCreating = _useState74[1];
-  var _useState75 = useState(''),
-    _useState76 = _slicedToArray(_useState75, 2),
-    createError = _useState76[0],
-    setCreateError = _useState76[1];
-  var _useState77 = useState('all'),
-    _useState78 = _slicedToArray(_useState77, 2),
-    categoryFilter = _useState78[0],
-    setCategoryFilter = _useState78[1];
-  // Pending debates waiting for acceptance
-  var _useState79 = useState([]),
-    _useState80 = _slicedToArray(_useState79, 2),
-    pendingDebates = _useState80[0],
-    setPendingDebates = _useState80[1];
-  var openDebate = function openDebate(d) {
-    return setActive(d.id === active ? null : d.id);
-  };
-  var activeDebate = debates.find(function (d) {
-    return d.id === active;
-  });
-  var submitArg = /*#__PURE__*/function () {
-    var _ref18 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-      var argText, argPass, newArg, capturedPhoto, debate, basePrompt, reply, tylerArg, _t12, _t13, _t14;
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.p = _context11.n) {
-          case 0:
-            if (!(!myArg.trim() || posting)) {
-              _context11.n = 1;
-              break;
-            }
-            return _context11.a(2);
-          case 1:
-            if (!clientFlag(myArg)) {
-              _context11.n = 2;
-              break;
-            }
-            alert('Your argument contains inappropriate language. Please revise it.');
-            return _context11.a(2);
-          case 2:
-            setPosting(true);
-            argText = myArg.trim();
-            _context11.n = 3;
-            return moderateContent(argText);
-          case 3:
-            argPass = _context11.v;
-            if (argPass) {
-              _context11.n = 4;
-              break;
-            }
-            alert('Your argument was flagged by moderation. Please keep arguments constructive and respectful.');
-            setPosting(false);
-            return _context11.a(2);
-          case 4:
-            newArg = {
-              id: Date.now(),
-              author: 'YOU_' + Math.random().toString(36).substr(2, 4).toUpperCase(),
-              text: argText,
-              votes: 0,
-              userVoted: false
-            };
-            setDebates(function (prev) {
-              return prev.map(function (d) {
-                if (d.id !== active) return d;
-                return _objectSpread(_objectSpread({}, d), {}, _defineProperty({}, mySide === 'for' ? 'forArgs' : 'againstArgs', [].concat(_toConsumableArray(d[mySide === 'for' ? 'forArgs' : 'againstArgs']), [newArg])));
-              });
-            });
-            setMyArg('');
-            setPosting(false);
-            setXp(function (x) {
-              return x + 20;
-            });
-            capturedPhoto = arenaPhoto;
-            setArenaPhoto(null);
-            // Tyler counter-argues
-            setTylerDebating(true);
-            _context11.p = 5;
-            debate = debates.find(function (d) {
-              return d.id === active;
-            });
-            basePrompt = "Debate topic: \"".concat(debate.topic, "\". The user argued on the ").concat(mySide === 'for' ? 'FOR' : 'AGAINST', " side and said: \"").concat(newArg.text, "\".").concat(capturedPhoto ? ' They also attached an evidence photo — look at it carefully and reference what you see.' : '', " As Tyler Durden, give a sharp counter-argument. One paragraph. Raw. Confrontational. No diplomacy. Challenge their logic or their motives.");
-            if (!capturedPhoto) {
-              _context11.n = 9;
-              break;
-            }
-            _context11.n = 6;
-            return callTylerWithPhoto(basePrompt, capturedPhoto.base64, capturedPhoto.mime);
-          case 6:
-            _t13 = _context11.v;
-            if (_t13) {
-              _context11.n = 8;
-              break;
-            }
-            _context11.n = 7;
-            return callTyler(basePrompt);
-          case 7:
-            _t13 = _context11.v;
-          case 8:
-            _t12 = _t13;
-            _context11.n = 11;
-            break;
-          case 9:
-            _context11.n = 10;
-            return callTyler(basePrompt);
-          case 10:
-            _t12 = _context11.v;
-          case 11:
-            reply = _t12;
-            tylerArg = {
-              id: Date.now() + 1,
-              author: 'TYLER_DURDEN',
-              text: reply,
-              votes: Math.floor(Math.random() * 20) + 5,
-              userVoted: false
-            };
-            setDebates(function (prev) {
-              return prev.map(function (d) {
-                if (d.id !== active) return d;
-                var side = mySide === 'for' ? 'againstArgs' : 'forArgs';
-                return _objectSpread(_objectSpread({}, d), {}, _defineProperty({}, side, [].concat(_toConsumableArray(d[side]), [tylerArg])));
-              });
-            });
-            _context11.n = 13;
-            break;
-          case 12:
-            _context11.p = 12;
-            _t14 = _context11.v;
-          case 13:
-            setTylerDebating(false);
-          case 14:
-            return _context11.a(2);
-        }
-      }, _callee11, null, [[5, 12]]);
-    }));
-    return function submitArg() {
-      return _ref18.apply(this, arguments);
-    };
-  }();
+  var xp = _ref17.xp, setXp = _ref17.setXp, user = _ref17.user;
 
-  // AI moderation check
-  var moderateContent = /*#__PURE__*/function () {
-    var _ref19 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(text) {
-      var res, _t15;
-      return _regenerator().w(function (_context12) {
-        while (1) switch (_context12.p = _context12.n) {
-          case 0:
-            _context12.p = 0;
-            _context12.n = 1;
-            return callTyler("You are a content moderator. Respond with ONLY \"PASS\" or \"FAIL\". \nCheck if this text contains: hate speech, slurs, explicit sexual content, threats, harassment, calls for violence, or targeted abuse.\nText: \"".concat(text.slice(0, 400), "\"\nReply PASS if acceptable for a general self-improvement debate forum. Reply FAIL if it violates these rules. Nothing else."));
-          case 1:
-            res = _context12.v;
-            return _context12.a(2, res.trim().toUpperCase().startsWith('PASS'));
-          case 2:
-            _context12.p = 2;
-            _t15 = _context12.v;
-            return _context12.a(2, true);
-        }
-      }, _callee12, null, [[0, 2]]);
-    }));
-    return function moderateContent(_x9) {
-      return _ref19.apply(this, arguments);
-    };
-  }();
+  var _vState  = useState('topics');
+  var view     = _vState[0], setView = _vState[1];
 
-  // Client-side instant flag
-  var clientFlag = function clientFlag(text) {
-    return containsTaboo(text);
-  };
-  var createDebate = /*#__PURE__*/function () {
-    var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
-      var pass, debate;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
-          case 0:
-            if (!(!newTopic.trim() || !newSummary.trim())) {
-              _context13.n = 1;
-              break;
-            }
-            setCreateError('Please fill in both the topic and a brief description.');
-            return _context13.a(2);
-          case 1:
-            if (!(newTopic.trim().length < 10)) {
-              _context13.n = 2;
-              break;
-            }
-            setCreateError('Topic must be at least 10 characters.');
-            return _context13.a(2);
-          case 2:
-            if (!(clientFlag(newTopic) || clientFlag(newSummary))) {
-              _context13.n = 3;
-              break;
-            }
-            setCreateError('Your topic contains inappropriate language. Please revise it.');
-            return _context13.a(2);
-          case 3:
-            setCreating(true);
-            setCreateError('');
-            _context13.n = 4;
-            return moderateContent(newTopic + ' ' + newSummary);
-          case 4:
-            pass = _context13.v;
-            if (pass) {
-              _context13.n = 5;
-              break;
-            }
-            setCreateError('This topic was flagged by our moderation system. Please keep debates on constructive real-world topics.');
-            setCreating(false);
-            return _context13.a(2);
-          case 5:
-            debate = {
-              id: Date.now(),
-              category: newCategory,
-              topic: newTopic.trim().toUpperCase(),
-              summary: newSummary.trim(),
-              votes: 0,
-              forArgs: [],
-              againstArgs: [],
-              isPending: true,
-              createdAt: Date.now(),
-              acceptedCount: 0
-            };
-            setPendingDebates(function (prev) {
-              return [debate].concat(_toConsumableArray(prev));
-            });
-            setNewTopic('');
-            setNewSummary('');
-            setShowCreate(false);
-            setCreating(false);
-          case 6:
-            return _context13.a(2);
-        }
-      }, _callee13);
-    }));
-    return function createDebate() {
-      return _ref20.apply(this, arguments);
+  var _rState  = useState([]);
+  var rooms    = _rState[0], setRooms = _rState[1];
+
+  var _arState = useState(null);
+  var activeRoom = _arState[0], setActiveRoom = _arState[1];
+
+  var _mState  = useState([]);
+  var messages = _mState[0], setMessages = _mState[1];
+
+  var _tState  = useState('');
+  var msgText  = _tState[0], setMsgText = _tState[1];
+
+  var _imgState  = useState(null);
+  var msgImage   = _imgState[0], setMsgImage = _imgState[1];
+
+  var _sState  = useState(false);
+  var sending  = _sState[0], setSending = _sState[1];
+
+  var _lrState  = useState(true);
+  var loadingRooms = _lrState[0], setLoadingRooms = _lrState[1];
+
+  var _gtState  = useState(false);
+  var generatingTopics = _gtState[0], setGeneratingTopics = _gtState[1];
+
+  var _ttState  = useState(false);
+  var tylerTyping = _ttState[0], setTylerTyping = _ttState[1];
+
+  var _cfState  = useState('all');
+  var catFilter = _cfState[0], setCatFilter = _cfState[1];
+
+  var _cdState  = useState({});
+  var countdowns = _cdState[0], setCountdowns = _cdState[1];
+
+  var _showCreate = useState(false);
+  var showCreate = _showCreate[0], setShowCreate = _showCreate[1];
+
+  var _newTopic = useState('');
+  var newTopic  = _newTopic[0], setNewTopic = _newTopic[1];
+
+  var _newCat   = useState('society');
+  var newCat    = _newCat[0], setNewCat = _newCat[1];
+
+  var _creating = useState(false);
+  var creating  = _creating[0], setCreating = _creating[1];
+
+  var _createErr = useState('');
+  var createErr  = _createErr[0], setCreateErr = _createErr[1];
+
+  var messagesEndRef = useRef(null);
+  var unsubRef       = useRef(null);
+  var tylerTimerRef  = useRef(null);
+  var inputRef       = useRef(null);
+
+  // ── Load rooms on mount ───────────────────────────────────────────
+  useEffect(function() {
+    loadRooms();
+    var t = setInterval(function() {
+      if (view === 'topics') loadRooms();
+    }, 30000);
+    return function() { clearInterval(t); };
+  }, []);
+
+  // ── Countdown tick ────────────────────────────────────────────────
+  useEffect(function() {
+    var t = setInterval(function() {
+      var cd = {};
+      rooms.forEach(function(r) { cd[r.id] = arenaTimeLeft(r.createdAt); });
+      setCountdowns(cd);
+    }, 1000);
+    return function() { clearInterval(t); };
+  }, [rooms]);
+
+  // ── Auto-scroll to bottom ─────────────────────────────────────────
+  useEffect(function() {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, tylerTyping]);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────
+  useEffect(function() {
+    return function() {
+      if (unsubRef.current) unsubRef.current();
+      if (tylerTimerRef.current) clearTimeout(tylerTimerRef.current);
     };
-  }();
-  var acceptDebate = function acceptDebate(debateId) {
-    setPendingDebates(function (prev) {
-      return prev.map(function (d) {
-        if (d.id !== debateId) return d;
-        var updated = _objectSpread(_objectSpread({}, d), {}, {
-          acceptedCount: d.acceptedCount + 1
+  }, []);
+
+  // ── Load rooms from Firestore ─────────────────────────────────────
+  function loadRooms() {
+    var f = getFirebase();
+    if (!f) { setLoadingRooms(false); return; }
+    var cutoff = Date.now() - ARENA_TTL;
+    f.db.collection('arena_rooms')
+      .orderBy('lastActivity', 'desc')
+      .limit(30)
+      .get()
+      .then(function(snap) {
+        var valid = [];
+        snap.docs.forEach(function(doc) {
+          var d = Object.assign({ id: doc.id }, doc.data());
+          if (d.createdAt < cutoff) {
+            // Delete expired room + its messages subcollection
+            doc.ref.delete().catch(function(){});
+          } else {
+            valid.push(d);
+          }
         });
-        if (updated.acceptedCount >= 2) {
-          // Graduate to live debates
-          setDebates(function (prev2) {
-            return [_objectSpread(_objectSpread({}, updated), {}, {
-              isPending: false
-            })].concat(_toConsumableArray(prev2));
-          });
-          return null;
-        }
-        return updated;
-      }).filter(Boolean);
-    });
-    setXp(function (x) {
-      return x + 10;
-    });
-  };
-  var checkAndRemoveFlagged = function checkAndRemoveFlagged(debateId, argId, side, text) {
-    if (clientFlag(text)) {
-      setTimeout(function () {
-        setDebates(function (prev) {
-          return prev.map(function (d) {
-            if (d.id !== debateId) return d;
-            var k = side === 'for' ? 'forArgs' : 'againstArgs';
-            return _objectSpread(_objectSpread({}, d), {}, _defineProperty({}, k, d[k].filter(function (a) {
-              return a.id !== argId;
-            })));
+        setRooms(valid);
+        setLoadingRooms(false);
+        if (valid.length === 0) generateAITopics();
+      })
+      .catch(function(e) {
+        console.warn('loadRooms error:', e);
+        setLoadingRooms(false);
+      });
+  }
+
+  // ── AI Topic Generation ───────────────────────────────────────────
+  function generateAITopics() {
+    var cacheKey = 'arena_gen_' + Math.floor(Date.now() / 3600000); // new topics per hour
+    try { if (sessionStorage.getItem(cacheKey)) return; } catch(_e) {}
+    setGeneratingTopics(true);
+    callTyler(
+      'You are generating live debate room topics for a community forum. ' +
+      'Generate 6 urgent, real-world debate topics from current global or regional issues — ' +
+      'politics, corruption, social conflicts, economic problems, media manipulation, environmental crisis, youth struggles. ' +
+      'Make them feel like headlines. Controversial but legitimate. ' +
+      'Return ONLY a valid JSON array with no markdown or explanation:\n' +
+      '[{"topic":"FULL CAPS TOPIC AS A QUESTION OR STATEMENT","category":"politics|corruption|society|education|economy|media|environment|youth","summary":"One sharp sentence of context."}]'
+    ).then(function(raw) {
+      try {
+        var clean = raw.replace(/```json|```/g, '').trim();
+        var topics = JSON.parse(clean);
+        var f = getFirebase();
+        if (!f) { setGeneratingTopics(false); return; }
+        var promises = topics.slice(0, 6).map(function(t) {
+          return f.db.collection('arena_rooms').add({
+            topic: (t.topic || 'WHAT DOES THE FUTURE HOLD?').toUpperCase(),
+            category: t.category || 'society',
+            summary: t.summary || '',
+            createdAt: Date.now(),
+            messageCount: 0,
+            participantCount: 0,
+            lastActivity: Date.now()
           });
         });
-      }, 5000); // removed after 5 seconds with a flash
-      return true;
-    }
-    return false;
-  };
-  var voteArg = function voteArg(debateId, argId, side) {
-    setDebates(function (prev) {
-      return prev.map(function (d) {
-        if (d.id !== debateId) return d;
-        var k = side === 'for' ? 'forArgs' : 'againstArgs';
-        return _objectSpread(_objectSpread({}, d), {}, _defineProperty({}, k, d[k].map(function (a) {
-          return a.id === argId && !a.userVoted ? _objectSpread(_objectSpread({}, a), {}, {
-            votes: a.votes + 1,
-            userVoted: true
-          }) : a;
-        })));
-      });
+        Promise.all(promises).then(function() {
+          loadRooms();
+          try { sessionStorage.setItem(cacheKey, '1'); } catch(_e) {}
+        }).catch(function(){});
+      } catch(_e) {}
+      setGeneratingTopics(false);
+    }).catch(function() { setGeneratingTopics(false); });
+  }
+
+  // ── Create custom room ────────────────────────────────────────────
+  function createRoom() {
+    if (!newTopic.trim()) { setCreateErr('Enter a topic.'); return; }
+    if (newTopic.trim().length < 8) { setCreateErr('Topic too short.'); return; }
+    if (containsTaboo(newTopic)) { setCreateErr('Topic contains inappropriate language.'); return; }
+    setCreating(true);
+    setCreateErr('');
+    var f = getFirebase();
+    if (!f) { setCreating(false); return; }
+    f.db.collection('arena_rooms').add({
+      topic: newTopic.trim().toUpperCase(),
+      category: newCat,
+      summary: 'Community-created debate.',
+      createdAt: Date.now(),
+      messageCount: 0,
+      participantCount: 0,
+      lastActivity: Date.now(),
+      createdBy: user ? user.username : 'UNKNOWN'
+    }).then(function() {
+      setNewTopic('');
+      setShowCreate(false);
+      setCreating(false);
+      loadRooms();
+    }).catch(function(e) {
+      setCreateErr('Failed to create room. Try again.');
+      setCreating(false);
     });
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    className: "section"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "section-header"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "section-eyebrow"
-  }, "Real World Conversations"), /*#__PURE__*/React.createElement("h2", {
-    className: "section-title"
-  }, "DEBATE", /*#__PURE__*/React.createElement("br", null), "ARENA")), /*#__PURE__*/React.createElement("div", {
-    className: "char-guides-row"
-  }, /*#__PURE__*/React.createElement(CharacterGuide, {
-    character: "tyler",
-    quote: "The lower you fall, the higher you'll fly. Stop hedging. Pick a side and fight for it.",
-    align: "left",
-    context: "philosophical debate and confronting uncomfortable truths"
-  }), /*#__PURE__*/React.createElement(CharacterGuide, {
-    character: "narrator",
-    quote: "I used to be so careful with what I said. Safe opinions. No conviction. That was the problem.",
-    align: "right",
-    context: "debates about society, consumerism and individuality"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "arena-intro"
-  }, /*#__PURE__*/React.createElement("strong", {
-    style: {
-      color: 'var(--text-bright)'
+  }
+
+  // ── Enter a chat room ─────────────────────────────────────────────
+  function enterRoom(room) {
+    if (unsubRef.current) unsubRef.current();
+    if (tylerTimerRef.current) clearTimeout(tylerTimerRef.current);
+    setActiveRoom(room);
+    setMessages([]);
+    setView('chat');
+    setMsgText('');
+    setMsgImage(null);
+    var f = getFirebase();
+    if (!f) return;
+    // Increment participant count
+    f.db.collection('arena_rooms').doc(room.id).update({
+      participantCount: firebase.firestore.FieldValue.increment(1)
+    }).catch(function(){});
+    // Real-time listener
+    unsubRef.current = f.db.collection('arena_rooms').doc(room.id)
+      .collection('messages')
+      .orderBy('ts', 'asc')
+      .limit(150)
+      .onSnapshot(function(snap) {
+        var msgs = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+        setMessages(msgs);
+      }, function(e) { console.warn('messages snapshot error:', e); });
+  }
+
+  // ── Leave room ────────────────────────────────────────────────────
+  function leaveRoom() {
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    if (tylerTimerRef.current) { clearTimeout(tylerTimerRef.current); }
+    if (activeRoom) {
+      var f = getFirebase();
+      if (f) {
+        f.db.collection('arena_rooms').doc(activeRoom.id).update({
+          participantCount: firebase.firestore.FieldValue.increment(-1)
+        }).catch(function(){});
+      }
     }
-  }, "This is where real conversations happen."), " Choose a topic \u2014 politics, corruption, society, education, economy. Pick your side. Make your argument. Tyler Durden will respond. \xA0Every argument earns 20 XP. Keep it honest, keep it constructive.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: 'var(--magenta)',
-      fontSize: '0.72rem',
-      letterSpacing: '0.12em'
+    setView('topics');
+    setActiveRoom(null);
+    setMessages([]);
+    setMsgText('');
+    setMsgImage(null);
+    setTylerTyping(false);
+    loadRooms();
+  }
+
+  // ── Send a message ────────────────────────────────────────────────
+  function sendMessage() {
+    if ((!msgText.trim() && !msgImage) || sending) return;
+    if (msgText.trim() && containsTaboo(msgText)) {
+      alert('Message contains inappropriate language.');
+      return;
     }
-  }, "\u25C8 COMMUNITY GUIDELINES: No hate speech, no slurs, no personal attacks, no adult content. Debates on real-world issues only. Violations are removed automatically.")), /*#__PURE__*/React.createElement("div", {
-    className: "arena-cat-row"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "arena-cat-btn ".concat(categoryFilter === 'all' ? 'active' : ''),
-    onClick: function onClick() {
-      return setCategoryFilter('all');
+    var f = getFirebase();
+    if (!f || !activeRoom || !user) return;
+    setSending(true);
+    var msgData = {
+      author: user.username,
+      uid: user.uid,
+      text: msgText.trim(),
+      ts: Date.now(),
+      votes: 0,
+      votedBy: [],
+      isTyler: false
+    };
+    if (msgImage) msgData.image = msgImage.preview;
+    f.db.collection('arena_rooms').doc(activeRoom.id)
+      .collection('messages').add(msgData)
+      .then(function() {
+        f.db.collection('arena_rooms').doc(activeRoom.id).update({
+          messageCount: firebase.firestore.FieldValue.increment(1),
+          lastActivity: Date.now()
+        }).catch(function(){});
+        setXp(function(x) { return x + 15; });
+        var capturedText  = msgText.trim();
+        var capturedImage = msgImage;
+        setMsgText('');
+        setMsgImage(null);
+        setSending(false);
+        if (inputRef.current) inputRef.current.focus();
+        maybetylerRespond(capturedText, capturedImage);
+      })
+      .catch(function() { setSending(false); });
+  }
+
+  // ── Tyler responds occasionally ───────────────────────────────────
+  function maybetylerRespond(userText, userImage) {
+    if (tylerTimerRef.current) clearTimeout(tylerTimerRef.current);
+    // Check last message wasn't Tyler
+    var lastIsTyler = messages.length > 0 && messages[messages.length - 1].isTyler;
+    if (lastIsTyler) return;
+    // Respond ~40% of the time, or every 4th message
+    var shouldRespond = (messages.length % 4 === 3) || (Math.random() < 0.38);
+    if (!shouldRespond) return;
+    setTylerTyping(true);
+    tylerTimerRef.current = setTimeout(function() {
+      var prompt =
+        'Live debate room topic: "' + (activeRoom ? activeRoom.topic : '') + '". ' +
+        'Community member "' + (user ? user.username : 'someone') + '" just said: "' + userText + '". ' +
+        (userImage ? 'They also shared an image as evidence. ' : '') +
+        'As Tyler Durden, cut into the conversation with a raw, sharp, confrontational interjection. ' +
+        'React to what they said. Challenge it or amplify it. No diplomacy. Under 70 words.';
+      var call = userImage
+        ? callTylerWithPhoto(prompt, userImage.base64, userImage.mime)
+        : callTyler(prompt);
+      call.then(function(reply) {
+        var f = getFirebase();
+        if (!f || !activeRoom) { setTylerTyping(false); return; }
+        f.db.collection('arena_rooms').doc(activeRoom.id)
+          .collection('messages').add({
+            author: 'TYLER_DURDEN',
+            uid: 'tyler',
+            text: reply,
+            ts: Date.now() + 100,
+            votes: 0,
+            votedBy: [],
+            isTyler: true
+          })
+          .then(function() { setTylerTyping(false); })
+          .catch(function() { setTylerTyping(false); });
+      }).catch(function() { setTylerTyping(false); });
+    }, 1200 + Math.random() * 2000);
+  }
+
+  // ── Upvote a message ──────────────────────────────────────────────
+  function voteMessage(msgId, votedBy) {
+    if (!user) return;
+    var already = (votedBy || []).includes(user.uid);
+    if (already) return;
+    var f = getFirebase();
+    if (!f || !activeRoom) return;
+    f.db.collection('arena_rooms').doc(activeRoom.id)
+      .collection('messages').doc(msgId).update({
+        votes: firebase.firestore.FieldValue.increment(1),
+        votedBy: firebase.firestore.FieldValue.arrayUnion(user.uid)
+      }).catch(function(){});
+  }
+
+  // ── Enter key to send ─────────────────────────────────────────────
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
-  }, "All Topics"), DEBATE_CATEGORIES.map(function (c) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: c.id,
-      className: "arena-cat-btn ".concat(categoryFilter === c.id ? 'active' : ''),
-      onClick: function onClick() {
-        return setCategoryFilter(c.id);
-      }
-    }, c.icon, " ", c.label);
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "create-debate-wrap"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "create-debate-toggle",
-    onClick: function onClick() {
-      setShowCreate(function (v) {
-        return !v;
-      });
-      setCreateError('');
-    }
-  }, showCreate ? '✕ Cancel' : '＋ Start a New Debate'), showCreate && /*#__PURE__*/React.createElement("div", {
-    className: "create-debate-form"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "create-form-label"
-  }, "\u25C8 CHOOSE A CATEGORY"), /*#__PURE__*/React.createElement("div", {
-    className: "create-cat-row"
-  }, DEBATE_CATEGORIES.map(function (c) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: c.id,
-      className: "create-cat-btn ".concat(newCategory === c.id ? 'active' : ''),
-      onClick: function onClick() {
-        return setNewCategory(c.id);
-      }
-    }, c.icon, " ", c.label);
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "create-form-hint"
-  }, (_DEBATE_CATEGORIES$fi = DEBATE_CATEGORIES.find(function (c) {
-    return c.id === newCategory;
-  })) === null || _DEBATE_CATEGORIES$fi === void 0 ? void 0 : _DEBATE_CATEGORIES$fi.hint), /*#__PURE__*/React.createElement("div", {
-    className: "create-form-label",
-    style: {
-      marginTop: '1rem'
-    }
-  }, "\u25C8 YOUR DEBATE TOPIC (write as a question or bold statement)"), /*#__PURE__*/React.createElement("input", {
-    className: "create-topic-input",
-    value: newTopic,
-    onChange: function onChange(e) {
-      return setNewTopic(e.target.value);
-    },
-    placeholder: "e.g. IS CORRUPTION DESTROYING OUR CITIES?",
-    maxLength: 120
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "create-form-label",
-    style: {
-      marginTop: '0.8rem'
-    }
-  }, "\u25C8 BRIEF CONTEXT (1-2 sentences explaining the debate)"), /*#__PURE__*/React.createElement("textarea", {
-    className: "create-summary-input",
-    value: newSummary,
-    onChange: function onChange(e) {
-      return setNewSummary(e.target.value);
-    },
-    placeholder: "Give a short, neutral description of what the debate is about...",
-    maxLength: 300,
-    rows: 3
-  }), createError && /*#__PURE__*/React.createElement("div", {
-    className: "create-error"
-  }, createError), /*#__PURE__*/React.createElement("div", {
-    className: "create-guidelines"
-  }, "Allowed: politics, corruption, society, education, economy, media, environment, youth topics. Not allowed: hate speech, slurs, adult content, personal attacks, misinformation."), /*#__PURE__*/React.createElement("button", {
-    className: "btn-primary",
-    onClick: createDebate,
-    disabled: creating || !newTopic.trim() || !newSummary.trim()
-  }, creating ? 'Checking content...' : '▶ SUBMIT DEBATE TOPIC'))), pendingDebates.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "pending-debates-wrap"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "pending-label"
-  }, "\u25C8 COMMUNITY PROPOSALS \u2014 Accept a topic to bring it to the Arena (", pendingDebates.length, ")"), pendingDebates.map(function (d) {
-    var _DEBATE_CATEGORIES$fi2, _DEBATE_CATEGORIES$fi3;
-    return /*#__PURE__*/React.createElement("div", {
-      key: d.id,
-      className: "pending-debate-row"
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-      className: "pending-cat"
-    }, (_DEBATE_CATEGORIES$fi2 = DEBATE_CATEGORIES.find(function (c) {
-      return c.id === d.category;
-    })) === null || _DEBATE_CATEGORIES$fi2 === void 0 ? void 0 : _DEBATE_CATEGORIES$fi2.icon, " ", (_DEBATE_CATEGORIES$fi3 = DEBATE_CATEGORIES.find(function (c) {
-      return c.id === d.category;
-    })) === null || _DEBATE_CATEGORIES$fi3 === void 0 ? void 0 : _DEBATE_CATEGORIES$fi3.label), /*#__PURE__*/React.createElement("div", {
-      className: "pending-topic"
-    }, d.topic), /*#__PURE__*/React.createElement("div", {
-      className: "pending-summary"
-    }, d.summary)), /*#__PURE__*/React.createElement("div", {
-      className: "pending-actions"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "pending-accepts"
-    }, d.acceptedCount, "/2 accepted"), /*#__PURE__*/React.createElement("button", {
-      className: "btn-secondary",
-      onClick: function onClick() {
-        return acceptDebate(d.id);
-      }
-    }, "\u2713 Accept (+10 XP)")));
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "debates-list"
-  }, debates.filter(function (d) {
-    return categoryFilter === 'all' || d.category === categoryFilter;
-  }).map(function (d, i) {
-    var _DEBATE_CATEGORIES$fi4, _DEBATE_CATEGORIES$fi5;
-    return /*#__PURE__*/React.createElement("div", {
-      key: d.id,
-      style: {
-        animationDelay: "".concat(i * 0.1, "s")
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "debate-row ".concat(d.id === active ? 'active-debate' : ''),
-      onClick: function onClick() {
-        return openDebate(d);
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-      className: "debate-cat-tag"
-    }, (_DEBATE_CATEGORIES$fi4 = DEBATE_CATEGORIES.find(function (c) {
-      return c.id === d.category;
-    })) === null || _DEBATE_CATEGORIES$fi4 === void 0 ? void 0 : _DEBATE_CATEGORIES$fi4.icon, " ", ((_DEBATE_CATEGORIES$fi5 = DEBATE_CATEGORIES.find(function (c) {
-      return c.id === d.category;
-    })) === null || _DEBATE_CATEGORIES$fi5 === void 0 ? void 0 : _DEBATE_CATEGORIES$fi5.label) || d.category), /*#__PURE__*/React.createElement("div", {
-      className: "debate-topic"
-    }, d.topic), /*#__PURE__*/React.createElement("div", {
-      className: "debate-meta"
-    }, /*#__PURE__*/React.createElement("span", null, d.forArgs.length + d.againstArgs.length, " ARGUMENTS"), /*#__PURE__*/React.createElement("span", null, d.votes.toLocaleString(), " VIEWS"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: 'var(--red)'
-      }
-    }, d.id === active ? '▲ CLOSE ARENA' : '▶ ENTER ARENA'))), /*#__PURE__*/React.createElement("div", {
-      className: "debate-stats"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "vote-count"
-    }, d.forArgs.length + d.againstArgs.length), /*#__PURE__*/React.createElement("div", {
-      className: "vote-label"
-    }, "ACTIVE FIGHTERS"))), d.id === active && /*#__PURE__*/React.createElement("div", {
-      className: "debate-arena"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "arena-header"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "arena-topic"
-    }, d.topic), /*#__PURE__*/React.createElement("button", {
-      className: "arena-close",
-      onClick: function onClick() {
-        return setActive(null);
-      }
-    }, "\u2715 LEAVE ARENA")), /*#__PURE__*/React.createElement("div", {
-      className: "arena-sides"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "arena-side for"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "side-label for-label"
-    }, "\u25B6 FOR / AGREE"), d.forArgs.map(function (arg) {
-      return /*#__PURE__*/React.createElement("div", {
-        key: arg.id,
-        className: "argument-item"
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "arg-author ".concat(arg.author === 'TYLER_DURDEN' ? 'tyler' : '')
-      }, arg.author === 'TYLER_DURDEN' ? '⚡ TYLER DURDEN' : "\u25C8 ".concat(arg.author)), /*#__PURE__*/React.createElement("div", {
-        className: "arg-text"
-      }, arg.text), /*#__PURE__*/React.createElement("div", {
-        className: "arg-votes"
-      }, /*#__PURE__*/React.createElement("button", {
-        className: "vote-btn ".concat(arg.userVoted ? 'voted' : ''),
-        onClick: function onClick() {
-          return voteArg(d.id, arg.id, 'for');
-        }
-      }, "\u25B2 ", arg.votes)));
-    }), tylerDebating && mySide !== 'for' && /*#__PURE__*/React.createElement("div", {
-      className: "argument-item"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "arg-author tyler"
-    }, "\u26A1 TYLER DURDEN"), /*#__PURE__*/React.createElement("div", {
-      className: "tyler-thinking"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "dot-pulse"
-    }, "."), /*#__PURE__*/React.createElement("span", {
-      className: "dot-pulse"
-    }, "."), /*#__PURE__*/React.createElement("span", {
-      className: "dot-pulse"
-    }, ".")))), /*#__PURE__*/React.createElement("div", {
-      className: "side-divider"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "vs-text"
-    }, "VS")), /*#__PURE__*/React.createElement("div", {
-      className: "arena-side against"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "side-label against-label"
-    }, "\u25B6 AGAINST / OPPOSE"), d.againstArgs.map(function (arg) {
-      return /*#__PURE__*/React.createElement("div", {
-        key: arg.id,
-        className: "argument-item"
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "arg-author ".concat(arg.author === 'TYLER_DURDEN' ? 'tyler' : '')
-      }, arg.author === 'TYLER_DURDEN' ? '⚡ TYLER DURDEN' : "\u25C8 ".concat(arg.author)), /*#__PURE__*/React.createElement("div", {
-        className: "arg-text"
-      }, arg.text), /*#__PURE__*/React.createElement("div", {
-        className: "arg-votes"
-      }, /*#__PURE__*/React.createElement("button", {
-        className: "vote-btn ".concat(arg.userVoted ? 'voted' : ''),
-        onClick: function onClick() {
-          return voteArg(d.id, arg.id, 'against');
-        }
-      }, "\u25B2 ", arg.votes)));
-    }), tylerDebating && mySide !== 'against' && /*#__PURE__*/React.createElement("div", {
-      className: "argument-item"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "arg-author tyler"
-    }, "\u26A1 TYLER DURDEN"), /*#__PURE__*/React.createElement("div", {
-      className: "tyler-thinking"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "dot-pulse"
-    }, "."), /*#__PURE__*/React.createElement("span", {
-      className: "dot-pulse"
-    }, "."), /*#__PURE__*/React.createElement("span", {
-      className: "dot-pulse"
-    }, "."))))), /*#__PURE__*/React.createElement("div", {
-      className: "arena-post"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "post-label"
-    }, "\u25C8 POST YOUR ARGUMENT (+20 XP)"), /*#__PURE__*/React.createElement("div", {
-      className: "post-side-select"
-    }, /*#__PURE__*/React.createElement("button", {
-      className: "side-btn for-btn ".concat(mySide === 'for' ? 'selected' : ''),
-      onClick: function onClick() {
-        return setMySide('for');
-      }
-    }, "FOR / AGREE"), /*#__PURE__*/React.createElement("button", {
-      className: "side-btn against-btn ".concat(mySide === 'against' ? 'selected' : ''),
-      onClick: function onClick() {
-        return setMySide('against');
-      }
-    }, "AGAINST / OPPOSE")), /*#__PURE__*/React.createElement("textarea", {
-      className: "post-textarea",
-      placeholder: "State your argument. Be specific. Be brutal. Be honest. Tyler Durden will respond...",
-      value: myArg,
-      onChange: function onChange(e) {
-        return setMyArg(e.target.value);
-      }
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "arena-attach-row"
-    }, /*#__PURE__*/React.createElement("label", {
-      className: "arena-attach-btn"
-    }, "\uD83D\uDCCE ", arenaPhoto ? '✓ Photo attached' : 'Attach evidence photo', /*#__PURE__*/React.createElement("input", {
-      type: "file",
-      accept: "image/*",
-      style: {
-        display: 'none'
-      },
-      onChange: function onChange(e) {
-        var f = e.target.files[0];
-        if (!f) return;
-        var r = new FileReader();
-        r.onload = function (ev) {
-          return setArenaPhoto({
-            base64: ev.target.result.split(',')[1],
-            mime: f.type,
-            preview: ev.target.result
-          });
-        };
-        r.readAsDataURL(f);
-      }
-    })), arenaPhoto && /*#__PURE__*/React.createElement("button", {
-      className: "arena-attach-clear",
-      onClick: function onClick() {
-        return setArenaPhoto(null);
-      }
-    }, "\u2715")), arenaPhoto && /*#__PURE__*/React.createElement("img", {
-      src: arenaPhoto.preview,
-      className: "arena-photo-preview",
-      alt: "evidence"
-    }), /*#__PURE__*/React.createElement("button", {
-      className: "btn-primary",
-      onClick: submitArg,
-      disabled: posting || tylerDebating || !myArg.trim()
-    }, posting ? 'POSTING...' : tylerDebating ? 'TYLER IS RESPONDING...' : 'ENTER THE ARENA'))));
-  })));
+  }
+
+  var filteredRooms = catFilter === 'all'
+    ? rooms
+    : rooms.filter(function(r) { return r.category === catFilter; });
+
+  // ════════════════════════════════════════════════════════════════
+  // RENDER — TOPICS VIEW
+  // ════════════════════════════════════════════════════════════════
+  if (view === 'topics') {
+    return React.createElement('div', { className: 'section' },
+
+      // Header
+      React.createElement('div', { className: 'section-header' },
+        React.createElement('div', { className: 'section-eyebrow' }, 'Live Debate Rooms'),
+        React.createElement('h2', { className: 'section-title' },
+          'ARENA'
+        )
+      ),
+
+      // Intro bar
+      React.createElement('div', { className: 'arena-intro-bar' },
+        React.createElement('span', { className: 'arena-intro-text' },
+          'AI-generated topics from real-world events. Each room lives for ',
+          React.createElement('strong', null, '24 hours'),
+          ' then disappears. Enter. Speak. Earn 15 XP per message.'
+        ),
+        React.createElement('div', { className: 'arena-intro-meta' },
+          React.createElement('span', { className: 'arena-live-dot' }),
+          rooms.length + ' LIVE ROOMS'
+        )
+      ),
+
+      // Category filter
+      React.createElement('div', { className: 'arena-cat-row' },
+        ARENA_CATS.map(function(c) {
+          return React.createElement('button', {
+            key: c.id,
+            className: 'arena-cat-btn' + (catFilter === c.id ? ' active' : ''),
+            onClick: function() { setCatFilter(c.id); }
+          }, c.icon + ' ' + c.label);
+        })
+      ),
+
+      // Create room button + form
+      React.createElement('div', { className: 'arena-create-wrap' },
+        React.createElement('button', {
+          className: 'arena-create-btn',
+          onClick: function() { setShowCreate(function(v) { return !v; }); setCreateErr(''); }
+        }, showCreate ? '✕ Cancel' : '＋ Start Your Own Debate'),
+
+        showCreate && React.createElement('div', { className: 'arena-create-form' },
+          React.createElement('div', { className: 'create-form-label' }, '◈ CATEGORY'),
+          React.createElement('div', { className: 'create-cat-row' },
+            ARENA_CATS.filter(function(c) { return c.id !== 'all'; }).map(function(c) {
+              return React.createElement('button', {
+                key: c.id,
+                className: 'create-cat-btn' + (newCat === c.id ? ' active' : ''),
+                onClick: function() { setNewCat(c.id); }
+              }, c.icon + ' ' + c.label);
+            })
+          ),
+          React.createElement('div', { className: 'create-form-label', style: { marginTop: '0.8rem' } }, '◈ YOUR TOPIC'),
+          React.createElement('input', {
+            className: 'create-topic-input',
+            value: newTopic,
+            maxLength: 120,
+            placeholder: 'e.g. IS AI REPLACING REAL HUMAN CONNECTION?',
+            onChange: function(e) { setNewTopic(e.target.value); }
+          }),
+          createErr && React.createElement('div', { className: 'create-error' }, createErr),
+          React.createElement('button', {
+            className: 'btn-primary',
+            style: { marginTop: '0.8rem' },
+            onClick: createRoom,
+            disabled: creating || !newTopic.trim()
+          }, creating ? 'Creating...' : '▶ OPEN ROOM')
+        )
+      ),
+
+      // Rooms loading state
+      (loadingRooms || generatingTopics) && React.createElement('div', { className: 'arena-loading' },
+        React.createElement('div', { className: 'arena-loading-dots' },
+          React.createElement('span', { className: 'dot-pulse' }, '◈'),
+          React.createElement('span', { className: 'dot-pulse' }, '◈'),
+          React.createElement('span', { className: 'dot-pulse' }, '◈')
+        ),
+        React.createElement('span', null, generatingTopics ? 'Scanning the world for today\'s debates...' : 'Loading rooms...')
+      ),
+
+      // Empty state
+      !loadingRooms && !generatingTopics && filteredRooms.length === 0 &&
+        React.createElement('div', { className: 'empty-state' },
+          React.createElement('span', { className: 'big' }, '⬤'),
+          'No active rooms in this category.',
+          React.createElement('br', null),
+          'Start one or check another category.'
+        ),
+
+      // Rooms grid
+      !loadingRooms && React.createElement('div', { className: 'arena-rooms-grid' },
+        filteredRooms.map(function(room, i) {
+          var catObj = ARENA_CATS.find(function(c) { return c.id === room.category; }) || ARENA_CATS[0];
+          var timeLeft = countdowns[room.id] || arenaTimeLeft(room.createdAt);
+          var isExpiring = timeLeft && timeLeft.indexOf('m') !== -1 && parseInt(timeLeft) < 30;
+          return React.createElement('div', {
+            key: room.id,
+            className: 'arena-room-card' + (isExpiring ? ' expiring' : ''),
+            style: { animationDelay: (i * 0.06) + 's' },
+            onClick: function() { enterRoom(room); }
+          },
+            React.createElement('div', { className: 'arena-room-top' },
+              React.createElement('span', { className: 'arena-room-cat' }, catObj.icon + ' ' + catObj.label),
+              React.createElement('div', { className: 'arena-room-timer' + (isExpiring ? ' expiring' : '') },
+                timeLeft ? '⏱ ' + timeLeft : 'EXPIRING'
+              )
+            ),
+            React.createElement('div', { className: 'arena-room-topic' }, room.topic),
+            room.summary && React.createElement('div', { className: 'arena-room-summary' }, room.summary),
+            React.createElement('div', { className: 'arena-room-footer' },
+              React.createElement('span', { className: 'arena-room-stat' },
+                '💬 ' + (room.messageCount || 0)
+              ),
+              React.createElement('span', { className: 'arena-room-stat' },
+                '👥 ' + (room.participantCount || 0)
+              ),
+              React.createElement('span', { className: 'arena-enter-label' }, 'ENTER ▶')
+            )
+          );
+        })
+      )
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  // RENDER — CHAT VIEW
+  // ════════════════════════════════════════════════════════════════
+  var roomTimeLeft = activeRoom ? (countdowns[activeRoom.id] || arenaTimeLeft(activeRoom.createdAt)) : null;
+  var catObj = activeRoom
+    ? (ARENA_CATS.find(function(c) { return c.id === activeRoom.category; }) || ARENA_CATS[0])
+    : ARENA_CATS[0];
+
+  return React.createElement('div', { className: 'arena-chat-wrap' },
+
+    // Chat header (sticky)
+    React.createElement('div', { className: 'arena-chat-header' },
+      React.createElement('button', { className: 'arena-back-btn', onClick: leaveRoom }, '← BACK'),
+      React.createElement('div', { className: 'arena-chat-header-info' },
+        React.createElement('div', { className: 'arena-chat-cat' }, catObj.icon + ' ' + catObj.label),
+        React.createElement('div', { className: 'arena-chat-topic' }, activeRoom ? activeRoom.topic : '')
+      ),
+      React.createElement('div', { className: 'arena-chat-header-meta' },
+        React.createElement('div', { className: 'arena-chat-timer' + (roomTimeLeft && roomTimeLeft.indexOf('m') !== -1 && parseInt(roomTimeLeft) < 30 ? ' expiring' : '') },
+          roomTimeLeft ? '⏱ ' + roomTimeLeft : ''
+        ),
+        React.createElement('div', { className: 'arena-chat-count' },
+          React.createElement('span', { className: 'arena-live-dot' }),
+          (activeRoom && activeRoom.participantCount ? activeRoom.participantCount : '—') + ' online'
+        )
+      )
+    ),
+
+    // Message feed
+    React.createElement('div', { className: 'arena-messages' },
+      messages.length === 0 && !tylerTyping &&
+        React.createElement('div', { className: 'arena-empty-chat' },
+          React.createElement('div', { className: 'arena-empty-icon' }, '◈'),
+          React.createElement('div', null, 'No messages yet.'),
+          React.createElement('div', { style: { opacity: 0.5, fontSize: '0.7rem', marginTop: '0.3rem' } }, 'Be the first to speak.')
+        ),
+
+      messages.map(function(msg) {
+        var isMe     = user && msg.uid === user.uid;
+        var isTyler  = msg.isTyler;
+        var voted    = user && (msg.votedBy || []).includes(user.uid);
+
+        return React.createElement('div', {
+          key: msg.id,
+          className: 'arena-msg' +
+            (isMe    ? ' arena-msg-me'    : '') +
+            (isTyler ? ' arena-msg-tyler' : '')
+        },
+          // Avatar / name row
+          React.createElement('div', { className: 'arena-msg-meta' },
+            React.createElement('span', { className: 'arena-msg-author' + (isTyler ? ' tyler' : '') },
+              isTyler ? '⚡ TYLER DURDEN' : (isMe ? 'YOU' : '◈ ' + msg.author)
+            ),
+            React.createElement('span', { className: 'arena-msg-time' }, timeAgo(msg.ts))
+          ),
+
+          // Bubble
+          React.createElement('div', { className: 'arena-msg-bubble' + (isTyler ? ' tyler-bubble' : '') + (isMe ? ' me-bubble' : '') },
+            msg.text && React.createElement('p', { className: 'arena-msg-text' + (isTyler ? ' tyler-text' : '') }, msg.text),
+            msg.image && React.createElement('img', {
+              src: msg.image,
+              className: 'arena-msg-img',
+              alt: 'shared image'
+            })
+          ),
+
+          // Upvote
+          !isTyler && React.createElement('button', {
+            className: 'arena-vote-btn' + (voted ? ' voted' : ''),
+            onClick: function() { voteMessage(msg.id, msg.votedBy); },
+            disabled: voted || isMe
+          }, '▲ ' + (msg.votes || 0))
+        );
+      }),
+
+      // Tyler typing indicator
+      tylerTyping && React.createElement('div', { className: 'arena-msg arena-msg-tyler' },
+        React.createElement('div', { className: 'arena-msg-meta' },
+          React.createElement('span', { className: 'arena-msg-author tyler' }, '⚡ TYLER DURDEN')
+        ),
+        React.createElement('div', { className: 'arena-msg-bubble tyler-bubble' },
+          React.createElement('div', { className: 'tyler-thinking' },
+            React.createElement('span', { className: 'dot-pulse' }, '●'),
+            React.createElement('span', { className: 'dot-pulse' }, '●'),
+            React.createElement('span', { className: 'dot-pulse' }, '●')
+          )
+        )
+      ),
+
+      React.createElement('div', { ref: messagesEndRef })
+    ),
+
+    // Input bar (sticky bottom)
+    React.createElement('div', { className: 'arena-input-bar' },
+      // Image preview strip
+      msgImage && React.createElement('div', { className: 'arena-img-preview-strip' },
+        React.createElement('img', { src: msgImage.preview, className: 'arena-img-thumb', alt: 'preview' }),
+        React.createElement('button', {
+          className: 'arena-img-remove',
+          onClick: function() { setMsgImage(null); }
+        }, '✕')
+      ),
+
+      // Input row
+      React.createElement('div', { className: 'arena-input-row' },
+        // Image attach
+        React.createElement('label', { className: 'arena-attach-label', title: 'Attach image' },
+          '📎',
+          React.createElement('input', {
+            type: 'file',
+            accept: 'image/*',
+            style: { display: 'none' },
+            onChange: function(e) {
+              var f = e.target.files[0];
+              if (f) compressImage(f, function(img) { setMsgImage(img); });
+              e.target.value = '';
+            }
+          })
+        ),
+
+        // Text input
+        React.createElement('textarea', {
+          ref: inputRef,
+          className: 'arena-text-input',
+          placeholder: 'Say something real...',
+          value: msgText,
+          rows: 1,
+          onChange: function(e) { setMsgText(e.target.value); },
+          onKeyDown: handleKeyDown
+        }),
+
+        // Send button
+        React.createElement('button', {
+          className: 'arena-send-btn' + ((!msgText.trim() && !msgImage) ? ' disabled' : ''),
+          onClick: sendMessage,
+          disabled: sending || (!msgText.trim() && !msgImage)
+        }, sending ? '...' : '▶')
+      ),
+
+      React.createElement('div', { className: 'arena-input-hint' }, '+15 XP per message · Enter to send · Shift+Enter for new line')
+    )
+  );
 }
 
 // ==================== CONFESSION WALL ====================
@@ -4477,30 +4392,10 @@ function ConfessionWall() {
 function MainApp(_ref21) {
   var user = _ref21.user,
     onLogout = _ref21.onLogout;
-  var _useState89 = useState(user.xp || 0),
+  var _useState89 = useState(0),
     _useState90 = _slicedToArray(_useState89, 2),
     xp = _useState90[0],
-    setXpRaw = _useState90[1];
-
-  // Persists XP to Firestore and session storage whenever it changes
-  var setXp = useCallback(function(updater) {
-    setXpRaw(function(prev) {
-      var next = typeof updater === 'function' ? updater(prev) : updater;
-      // Write to Firestore
-      var f = getFirebase();
-      if (f && user && user.uid) {
-        f.db.collection('users').doc(user.uid)
-          .update({ xp: next })
-          .catch(function(e) { console.warn('XP save failed:', e.message); });
-      }
-      // Also keep session in sync so a page refresh doesn't reset
-      try {
-        var sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
-        if (sess) { sess.xp = next; sessionStorage.setItem('fc_session', JSON.stringify(sess)); }
-      } catch(_e) {}
-      return next;
-    });
-  }, [user]);
+    setXp = _useState90[1];
   var _useState91 = useState('missions'),
     _useState92 = _slicedToArray(_useState91, 2),
     tab = _useState92[0],
@@ -4629,11 +4524,11 @@ function MainApp(_ref21) {
     }
   }, "\u23FB Sign Out")))), tab === 'missions' && /*#__PURE__*/React.createElement(MissionBoard, {
     xp: xp,
-    setXp: setXp,
-    user: user
+    setXp: setXp
   }), tab === 'arena' && /*#__PURE__*/React.createElement(DebateArena, {
     xp: xp,
-    setXp: setXp
+    setXp: setXp,
+    user: user
   }), tab === 'wall' && /*#__PURE__*/React.createElement(ConfessionWall, null));
 }
 
