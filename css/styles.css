@@ -101,6 +101,18 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
 .term-line.white { color:var(--text-bright);font-size:1rem; }
 .term-line.dim { color:var(--text-dim);font-size:0.78rem; }
 .term-cursor { display:inline-block;width:9px;height:1.1em;background:var(--red);animation:blink 1s infinite;vertical-align:text-bottom;margin-left:2px; }
+.entry-welcome {
+  font-family: var(--font-head);
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-bright);
+  line-height: 0.95;
+  display: block;
+  margin-top: 1rem;
+  text-shadow: 3px 3px 0 var(--magenta-dim), -1px -1px 0 rgba(0,191,165,0.2);
+  animation: fadeIn 0.6s ease;
+}
 .entry-input-wrap { margin-top:1.5rem;display:flex;gap:0.6rem;align-items:stretch; }
 .entry-input-row { display:flex;align-items:center;gap:0.5rem;flex:1;min-width:0; }
 .entry-prompt { color:var(--red);font-size:clamp(0.75rem,2.5vw,1.1rem);white-space:nowrap;flex-shrink:0; }
@@ -136,14 +148,15 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
   overflow: visible;
 }
 .nav-logo {
-  font-family: var(--font-logo);
-  font-size: clamp(0.9rem,2.2vw,1.35rem);
-  letter-spacing: clamp(0.1em,0.5vw,0.3em);
+  font-family: var(--font-head);
+  font-size: clamp(1rem,2.5vw,1.5rem);
+  letter-spacing: clamp(0.15em,0.5vw,0.35em);
   color: var(--text-bright);
   text-transform: uppercase;
   position: relative; cursor: default; user-select: none;
   animation: flicker 8s infinite;
   white-space: nowrap; flex-shrink: 0;
+  text-shadow: 2px 2px 0 var(--magenta-dim), -1px -1px 0 rgba(0,191,165,0.2);
 }
 .nav-logo::before,.nav-logo::after { content:attr(data-text);position:absolute;top:0;left:0;font-family:inherit;font-size:inherit;letter-spacing:inherit; }
 .nav-logo::before { color:var(--magenta);animation:glitch-shift 6s infinite;clip-path:polygon(0 0,100% 0,100% 40%,0 40%); }
@@ -679,10 +692,26 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
   html { font-size:15px; }
   .main-nav { padding:0 0.7rem;min-height:46px;gap:0.3rem; }
   .nav-logo  { font-size:0.78rem;letter-spacing:0.06em; }
-  .nav-tabs  { gap:0.1rem; }
-  .nav-tab   { font-size:0.48rem;padding:0.28rem 0.42rem;letter-spacing:0.04em;min-height:32px; }
-  .nav-tab-full  { display:none; }
-  .nav-tab-short { display:inline; }
+  .nav-tabs  { gap:0; }
+  .nav-tab   {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    padding: 0.35rem 0.9rem;
+    letter-spacing: 0.15em;
+    min-height: 46px;
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-dim);
+  }
+  .nav-tab:hover { border: none !important; background: transparent !important; color: var(--text); }
+  .nav-tab.active {
+    border: none !important;
+    background: transparent !important;
+    color: var(--red-bright);
+  }
+  .nav-tab.active::after { height: 2px; bottom: 0; }
+  .nav-tab-full  { display: none; }
+  .nav-tab-short { display: inline; }
   .nav-user-info { display:none; }
   .nav-chevron   { display:none; }
   .nav-user { padding:0.25rem;gap:0; }
