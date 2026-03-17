@@ -1420,7 +1420,9 @@ function AuthScreen(_ref2) {
               uid: cred.user.uid,
               username: uname,
               email: cred.user.email,
-              method: 'email'
+              method: 'email',
+              xp: (doc.exists && doc.data().xp) ? Number(doc.data().xp) : 0,
+              completedIds: (doc.exists && doc.data().completedIds) ? doc.data().completedIds : []
             };
             saveSession(user);
             onAuth(user);
@@ -1478,7 +1480,9 @@ function AuthScreen(_ref2) {
                 uid: uid,
                 username: data.username,
                 email: cred.user.email,
-                method: 'google'
+                method: 'google',
+                xp: data.xp ? Number(data.xp) : 0,
+                completedIds: data.completedIds || []
               };
               saveSession(user);
               onAuth(user);
@@ -4180,10 +4184,40 @@ function ConfessionWall(_ref24) {
 function MainApp(_ref21) {
   var user = _ref21.user,
     onLogout = _ref21.onLogout;
-  var _useState89 = useState(0),
+  var _useState89 = useState(user.xp || 0),
     _useState90 = _slicedToArray(_useState89, 2),
     xp = _useState90[0],
-    setXp = _useState90[1];
+    setXpRaw = _useState90[1];
+
+  // Load fresh XP from Firestore on mount in case session is stale
+  useEffect(function() {
+    var f = getFirebase();
+    if (!f || !user || !user.uid) return;
+    f.db.collection('users').doc(user.uid).get().then(function(doc) {
+      if (doc.exists && doc.data().xp) {
+        var freshXp = Number(doc.data().xp);
+        if (freshXp !== xp) setXpRaw(freshXp);
+      }
+    }).catch(function(){});
+  }, []);
+
+  // setXp — writes to Firestore + keeps session in sync
+  var setXp = useCallback(function(updater) {
+    setXpRaw(function(prev) {
+      var next = typeof updater === 'function' ? updater(prev) : updater;
+      var f = getFirebase();
+      if (f && user && user.uid) {
+        f.db.collection('users').doc(user.uid)
+          .update({ xp: next })
+          .catch(function(e) { console.warn('XP save failed:', e.message); });
+      }
+      try {
+        var sess = JSON.parse(sessionStorage.getItem('fc_session') || 'null');
+        if (sess) { sess.xp = next; sessionStorage.setItem('fc_session', JSON.stringify(sess)); }
+      } catch(_e) {}
+      return next;
+    });
+  }, [user]);
   var _useState91 = useState('missions'),
     _useState92 = _slicedToArray(_useState91, 2),
     tab = _useState92[0],
