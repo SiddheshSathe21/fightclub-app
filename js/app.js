@@ -1708,7 +1708,8 @@ function AuthScreen(_ref2) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "auth-box"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "auth-logo"
+    className: "auth-logo",
+    "data-text": "FIGHT CLUB"
   }, "FIGHT CLUB"), /*#__PURE__*/React.createElement("div", {
     className: "auth-tagline"
   }, "Build Character. Reject Mediocrity. Live with Purpose."), mode === 'welcome' && /*#__PURE__*/React.createElement("div", {
