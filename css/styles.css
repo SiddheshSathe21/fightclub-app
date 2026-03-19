@@ -566,7 +566,40 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
 @media (min-height:700px) { .auth-gate { align-items:center;padding:1rem; } }
 
 .auth-box { position:relative;z-index:10;width:min(440px,calc(100vw - 2rem));background:var(--surface);border:1px solid var(--border);padding:clamp(1.5rem,5vw,2.8rem) clamp(1.2rem,5vw,2.4rem);animation:fadeIn 0.5s ease;box-shadow:0 0 60px rgba(0,191,165,0.06);margin:auto; }
-.auth-logo    { font-family:var(--font-logo);font-size:clamp(1.6rem,7vw,2.6rem);letter-spacing:0.25em;color:var(--text-bright);text-align:center;margin-bottom:0.4rem;text-shadow:0 0 20px rgba(0,191,165,0.3); }
+.auth-logo {
+  font-family: var(--font-head);
+  font-size: clamp(2.2rem, 10vw, 3.5rem);
+  letter-spacing: 0.3em;
+  color: var(--text-bright);
+  text-align: center;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 var(--magenta-dim), -1px -1px 0 rgba(0,191,165,0.2);
+  animation: flicker 8s infinite;
+  position: relative;
+  display: block;
+  line-height: 1;
+}
+.auth-logo::before, .auth-logo::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-align: center;
+}
+.auth-logo::before {
+  color: var(--magenta);
+  animation: glitch-shift 6s infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+}
+.auth-logo::after {
+  color: var(--teal-bg);
+  animation: glitch-shift 6s infinite 0.1s;
+  clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+  opacity: 0.5;
+}
 .auth-tagline { font-family:var(--font-mono);font-size:clamp(0.55rem,1.5vw,0.65rem);letter-spacing:0.15em;color:var(--text-dim);text-align:center;text-transform:uppercase;margin-bottom:2rem;line-height:1.6; }
 .auth-welcome-text { font-family:var(--font-mono);font-size:0.72rem;color:var(--text-dim);line-height:1.8;text-align:center;margin-bottom:1.5rem; }
 .auth-btn-group { display:flex;flex-direction:column;gap:0.75rem; }
