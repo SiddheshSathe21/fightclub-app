@@ -110,7 +110,9 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
   line-height: 0.95;
   display: block;
   margin-top: 1rem;
-  text-shadow: 3px 3px 0 var(--magenta-dim), -1px -1px 0 rgba(0,191,165,0.2);
+  text-shadow: 4px 4px 0 var(--magenta-dim), -2px -2px 0 rgba(0,191,165,0.25);
+  -webkit-text-stroke: 1.5px var(--text-bright);
+  paint-order: stroke fill;
   animation: fadeIn 0.6s ease;
 }
 .entry-input-wrap { margin-top:1.5rem;display:flex;gap:0.6rem;align-items:stretch; }
@@ -157,6 +159,8 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
   animation: flicker 8s infinite;
   white-space: nowrap; flex-shrink: 0;
   text-shadow: 2px 2px 0 var(--magenta-dim), -1px -1px 0 rgba(0,191,165,0.2);
+  -webkit-text-stroke: 1px var(--text-bright);
+  paint-order: stroke fill;
   line-height: 1;
 }
 .nav-logo::before,.nav-logo::after { content:attr(data-text);position:absolute;top:0;left:0;font-family:inherit;font-size:inherit;letter-spacing:inherit; }
@@ -574,7 +578,9 @@ button, input, textarea, select { touch-action: manipulation; -webkit-tap-highli
   text-align: center;
   margin-bottom: 0.4rem;
   text-transform: uppercase;
-  text-shadow: 3px 3px 0 var(--magenta-dim), -1px -1px 0 rgba(0,191,165,0.2);
+  text-shadow: 4px 4px 0 var(--magenta-dim), -2px -2px 0 rgba(0,191,165,0.25);
+  -webkit-text-stroke: 1.5px var(--text-bright);
+  paint-order: stroke fill;
   animation: flicker 8s infinite;
   position: relative;
   display: block;
