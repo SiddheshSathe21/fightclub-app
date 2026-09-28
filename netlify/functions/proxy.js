@@ -1,11 +1,11 @@
 // ============================================================
-//  netlify/functions/claude.js
+//  netlify/functions/proxy.js
 //
 //  This is a serverless function that runs on Netlify's servers.
 //  It acts as a secure proxy between your app and the AI API,
 //  keeping your API key hidden from the browser.
 //
-//  The app calls: /.netlify/functions/claude
+//  The app calls: /.netlify/functions/proxy
 //  This function calls: the AI API (Groq by default)
 //
 //  To switch between AI providers, change the URL and headers below.
@@ -75,7 +75,7 @@ exports.handler = async (event) => {
     };
     */
 
-    // ── OPTION C: Anthropic Claude (paid but best quality) ──────────
+    // ── OPTION C: Anthropic proxy (paid but best quality) ──────────
     // Uncomment this block and comment out Option A above.
     // Get key from: https://console.anthropic.com
     // Netlify env variable name: ANTHROPIC_API_KEY
